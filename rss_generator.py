@@ -11,7 +11,7 @@ rss_preamble = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"
 
 rss_head = """
   <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Ground Oddity</title>
+  <title>the Last Refugee</title>
   <subtitle>Personal blog of Jiahao Cai</subtitle>
   <link href="http://yanjieze.xyz/"/>
   <link href="http://yanjieze.xyz/atom.xml" rel="self" type="application/atom+xml"/>

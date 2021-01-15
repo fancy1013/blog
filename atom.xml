@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
   <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Ground Oddity</title>
+  <title>the Last Refugee</title>
   <subtitle>Personal blog of Jiahao Cai</subtitle>
   <link href="http://yanjieze.xyz/"/>
   <link href="http://yanjieze.xyz/atom.xml" rel="self" type="application/atom+xml"/>
@@ -8,7 +8,7 @@
     <name>Yanjie Ze</name>
   </author>
   <id>http://yanjieze.xyz/</id>
-<updated>2021-01-15T17:19:26.091351+08:00</updated>
+<updated>2021-01-15T17:23:35.446111+08:00</updated>
 <entry><title>test</title><published>Jan 15, 2021</published><updated>2021-01-15T16:36:55Z</updated><link href="http://yanjieze.xyz/posts/2021-jan.html"/><id>http://yanjieze.xyz/posts/2021-jan.html</id><author> <name>Yanjie Ze</name> </author><content type="html"><![CDATA[ 
 
 <header id="title-block-header">
