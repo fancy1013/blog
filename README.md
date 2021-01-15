@@ -1,11 +1,11 @@
 # blog
 
-This repo contains my personal blog, and a simple/stupid "framework" (nope) to help me manage it.
+This repo contains my personal blog.
 
 ## Usage
 
 - write your posts in Markdown under `blog/posts/src`
-- run `make` to generate HTML from Markdown
+- run `make` to generate HTML from Markdown(no chinese character in file name!)
 - run `py rss_generator.py` to generate RSS Feed, `blog/atom.xml`
 - run `py sitemap_generator.py` to generate sitemap, `blog/sitemap.xml`
 - run `make sync` to sync the blog to server
