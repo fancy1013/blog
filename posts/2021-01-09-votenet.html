@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-01-15T21:21:53Z" />
+  <meta name="published" content="Jan 9,2021" />
+  <title>VoteNet与霍夫投票</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">VoteNet与霍夫投票</h1>
+<p class="date">Jan 9,2021</p>
+</header>
+<h3 id="来自论文deep-hough-voting-for-3d-object-detection-in-point-clouds">来自论文：Deep Hough Voting for 3D Object Detection in Point Clouds</h3>
+<h1 id="一介绍">一、介绍</h1>
+<p>主要创新点：使用了deep point set networks 和 Hough voting</p>
+<p>点云的稀疏性导致3D物体中心难以找到。因此借鉴了<em>Hough voting</em>的思想。</p>
+<p>与传统的Hough voting相比，多个单独的模块难以联合优化，VoteNet是端到端可优化的。（为什么？？）</p>
+<h1 id="二相关工作">二、相关工作</h1>
+<p>（1）3D object detection：大多是间接处理点云（不过有了pointnet之后应该不多了）</p>
+<p>（2）<strong>Hough voting for object detection</strong>：using a max-margin framework；Hough forest；等等</p>
+<p>（3） Deep learning on point clouds：VoxelNet；Frustum PointNet</p>
+<h1 id="三deep-hough-voting">三、Deep Hough Voting</h1>
+<p>首先，什么是霍夫投票？</p>
+<p>附上一个靠谱的b站视频教程：<a href="https://www.bilibili.com/video/BV1bb411b7VQ?from=search&amp;seid=15036668248515923150">霍夫变换和霍夫投票</a></p>
+<p>真的是一个和“投票”有关的机制….</p>
+<p>该论文把传统的霍夫投票的思想应用在3D点云处理上, 做出了一些改变点:</p>
+<ol type="1">
+<li><p>兴趣点是通过深层神经网络来描述和选择的，而不是依赖于手工制作的特征。</p></li>
+<li><p>投票生成是由网络学习的，而不是使用codebook。 改变更大的感受野，投票可以减少模糊性，从而更有效。 此外，投票位置可以通过特征向量来增强，从而能够更好地聚合。</p></li>
+<li><p>投票聚合是通过具有可训练参数的点云处理层实现的。 利用投票功能，网络可以过滤掉低质量的选票，并产生更好的提案。</p></li>
+<li><p>“目标提案”以：位置、维度、方向甚至语义类的形式可以直接从聚合特征生成，从而减少了追溯选票来源的需要。</p></li>
+</ol>
+<h1 id="四votenet结构">四、VoteNet结构</h1>
+<p>两部分：</p>
+<p>第一部分，处理真实存在的points，来生成votes</p>
+<p>第二部分，用虚拟的points，即votes，来识别分类。</p>
+<h2 id="learning-to-vote-in-point-clouds">（1）<strong>Learning to Vote in Point Clouds</strong></h2>
+<p>两个主要步骤：<strong>用一个backbone network学习特征；霍夫投票</strong>。</p>
+<p>backbone network：pointnet++</p>
+<p>大概解释一下backbone是什么意思：</p>
+<blockquote>
+<p>backbone这个单词原意指的是人的脊梁骨，后来引申为支柱，核心的意思。</p>
+<p>在神经网络中，尤其是CV领域，一般先对图像进行特征提取（常见的有vggnet，resnet，谷歌的inception），这一部分是整个CV任务的根基，因为后续的下游任务都是基于提取出来的图像特征去做文章（比如分类，生成等等）。</p>
+<p>所以将这一部分网络结构称为backbone十分形象，仿佛是一个人站起来的支柱。</p>
+</blockquote>
+<p>pointnet++输出的是M个seed points，维度3+C。C代表特征向量的维度。</p>
+<p>每个seed point生成一个vote。（一个seed point生成多个vote的情形在论文附录里讨论）</p>
+<p>与传统的霍夫投票不同，这篇论文用神经网络进行霍夫投票。</p>
+<p>voting module用一个MLP实现，用了全连接层、ReLU和batch normalization。</p>
+<p>seed point是s = [x;f], x是3维，f是C维</p>
+<p>输入：特征f, C维。</p>
+<p>输出：deltax，3维。deltaf，C维。</p>
+<p>这样，得到vote v = [ y ; g], 其中y=x+deltax, g=f+deltaf</p>
+<p>deltax的损失函数：</p>
+<center>
+<img src="../imgs/formula2.png" alt="" style="height: 300px;margin-left:20pt;"/>
+</center>
+<p>从seeds生成的votes离彼此更近，使得从不同部分组合线索更容易。</p>
+<h2 id="object-proposal-and-classifification-from-votes">（2）<strong>Object Proposal and Classifification from Votes</strong></h2>
+<p>两个主要步骤：<strong>通过采样和组合进行投票聚类；从投票聚类得到提案和分类。</strong></p>
+<p>第一步，通过采样和组合进行投票聚类。</p>
+<p>从多个投票 v = [y;g]中，用<strong>最远点采样</strong>（基于y）的方法得到K个投票。</p>
+<p>然后根据K个投票形成K个聚类，即将与vote距离小于等于r的vote归入一类。</p>
+<p>第二步，从投票聚类得到提案和分类。</p>
+<p>对于一个聚类，<span class="math inline">\(C={w_i}, w_i = [z_i; h_i]\)</span></p>
+<p>令<span class="math inline">\(z_i^0=(z_i-z_j)/r\)</span>,即normalize</p>
+<p>然后把点放进一个point—like module。</p>
+<p><strong>损失函数</strong>：由 objectness, bounding box estimation, 和 semantic classifification losses构成</p>
+<p>（objectness是什么？？）</p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>

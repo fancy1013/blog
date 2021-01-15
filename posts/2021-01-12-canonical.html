@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-01-15T21:21:53Z" />
+  <meta name="published" content="Jan 12,2021" />
+  <title>Canonical Voting：更好的投票机制</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Canonical Voting：更好的投票机制</h1>
+<p class="date">Jan 12,2021</p>
+</header>
+<h3 id="来自mentor的论文canonical-voting-towards-robust-oriented-bounding-box-detection-in-3d-scenes">来自mentor的论文：<strong>Canonical Voting: Towards Robust Oriented Bounding Box Detection in 3D Scenes</strong></h3>
+<h1 id="一介绍">一、介绍</h1>
+<p>首先，估计Local Canonical Coordinates和box scales</p>
+<p>然后，设计了canonical voting algorithm找到object orientations 和centers，并且 进行<strong>LCC checking with back projection</strong>.</p>
+<p>那么什么是Local Canonical Coordinates呢？从文中看来我不是很清楚，因此做一些查询。</p>
+<h2 id="canonical-transformation">Canonical transformation</h2>
+<p>In <a href="https://en.wikipedia.org/wiki/Hamiltonian_mechanics">Hamiltonian mechanics</a>, a <strong>canonical transformation</strong> is a change of <a href="https://en.wikipedia.org/wiki/Canonical_coordinates">canonical coordinates</a> (<strong>q</strong>, <strong>p</strong>, <em>t</em>) → (<strong>Q</strong>, <strong>P</strong>, <em>t</em>) that preserves the form of <a href="https://en.wikipedia.org/wiki/Hamilton&#39;s_equations">Hamilton’s equations</a>.</p>
+<h2 id="canonical-coordinates">Canonical Coordinates</h2>
+<p>In <a href="https://en.wikipedia.org/wiki/Mathematics">mathematics</a> and <a href="https://en.wikipedia.org/wiki/Classical_mechanics">classical mechanics</a>, <strong>canonical coordinates</strong> are sets of <a href="https://en.wikipedia.org/wiki/Coordinates">coordinates</a> on <a href="https://en.wikipedia.org/wiki/Phase_space">phase space</a> which can be used to describe a physical system at any given point in time. Canonical coordinates are used in the <a href="https://en.wikipedia.org/wiki/Hamiltonian_mechanics">Hamiltonian formulation</a> of <a href="https://en.wikipedia.org/wiki/Classical_mechanics">classical mechanics</a>.</p>
+<blockquote>
+<p>疑问1：还是没有看懂。所以Local Canonical Coordinates是什么？</p>
+</blockquote>
+<h1 id="二方法">二、方法</h1>
+<h2 id="pipeline">（1）Pipeline</h2>
+<p>首先，regress Local Canonical Coordinates, scales and objectness for each scene point</p>
+<p>然后，提出canonical voting algorithm,生成投票</p>
+<p>最后，用LCC back projection checking module去除false positive，生成bouding boxes。</p>
+<center>
+<img src="../imgs/canonical_pipeline.png" alt="canonical_pipeline" style="height: 300px;margin-left:20pt;"/>
+</center>
+<h2 id="learning-to-regress-local-canonical-coordinates">（2） <strong>Learning to Regress Local Canonical Coordinates</strong></h2>
+<blockquote>
+<p>疑问2：为什么选取y轴做 gravity axis?</p>
+</blockquote>
+<p>旋转角只考虑heading angle around the gravity axis。</p>
+<center>
+<img src="../imgs/formula3.png" alt="formula3" style="height: 300px;margin-left:20pt;"/>
+</center>
+<p>s是bouding box scale，P_hat 是LCC坐标，P是世界坐标，t是bounding box centers。</p>
+<p><strong>公式（1）可以进行LCC坐标与世界坐标的转化。</strong></p>
+<p>然后，用<strong>Minkowski convolution with ResNet structure</strong>来学习s和p_hat。</p>
+<p>损失函数：</p>
+<center>
+<img src="../imgs/formula4.png" alt="formula4" style="height: 300px;margin-left:20pt;"/>
+</center>
+<blockquote>
+<p>疑问3：损失函数里为什么只对scale进行一个单独的差值运算？</p>
+</blockquote>
+<p>理解公式（2）：用来拟合LCC坐标和bounding box scale，而不拟合旋转角α和object center。因为LCC坐标具有旋转不变性，但direct offset没有。</p>
+<blockquote>
+<p>疑问4：这里的direct offset是什么？</p>
+</blockquote>
+<h3 id="why-local-canonical-coordinates"><strong>Why Local Canonical Coordinates?</strong></h3>
+<center>
+<img src="../imgs/canonical_p4.png" alt="canonical_p4" style="height: 300px;margin-left:20pt;"/>
+</center>
+<p>(这个小鸭子好可爱)</p>
+<p>LCC可以随旋转而不改变学习到的特征。</p>
+<h3 id="object-symmetry">Object Symmetry</h3>
+<p>由于只有一个旋转角，对于一些高度对称性的物体，LCC表示会导致很大的error。</p>
+<p>因此，对于对称的形状，进行旋转然后学习。</p>
+<p>对于二重对称（例如矩形），旋转0度或180度。</p>
+<p>对于四重对称（例如正方形），旋转0度，90度，180度，270度。</p>
+<p>对于无限重对称（例如圆形），旋转36个不同的角度。</p>
+<p>计算每一个角度的loss然后取最小的loss。</p>
+<h2 id="canonical-voting-with-objectness">（3）<strong>Canonical Voting with Objectness</strong></h2>
+<p>提出 canonical voting algorithm，产生vote map，表明存在物体的概率。</p>
+<p>每个点有个额外的<strong>objectness score</strong>，o∈[0,1]，1表示有实例物体，0表示没有。使用Cross Entropy loss。</p>
+<p>在有了s，p_hat，o之后，可以进行vote，投票出bounding box center。</p>
+<p>为了计算投票数，将连续的欧式空间离散化为<strong>H×D×W</strong>的格子。H，D，W取决于事先预定好的间隔tao和输入的点云规模。</p>
+<p>G_obj：<strong>H×D×W</strong></p>
+<p>G_rot：<strong>H×D×W</strong></p>
+<p>G_scale：<strong>H×D×W×3</strong></p>
+<blockquote>
+<p>疑问5：这里的H，D，W是什么意思？</p>
+</blockquote>
+<p>具体算法如下图。</p>
+<p><img src="postimage/alg1.png" /></p>
+<p>算法1说明：</p>
+<p>第4行，生成可能的offset，未考虑旋转。</p>
+<p>第6行，旋转K次，找到可能的orientation。（实验中k=120）</p>
+<p>第7行，根据公式（1）计算center。</p>
+<p>第8行，找到center附近的8个格子（2×2×2），记为N</p>
+<p>第9、10、11行，投票计数，用trilinear interpolation</p>
+<p>第14行，投票归一化。</p>
+<h2 id="lcc-checking-with-back-projection-for-bounding-box-generation">（4） <strong>LCC Checking with Back Projection for Bounding Box Generation</strong></h2>
+<p>最后一步了。</p>
+<p>找到G_obj中最大的值然后生成bounding boxes。其中，false positive被LCC checking with back projection给过滤掉。</p>
+<p>LCC checking with back projection的算法流程：</p>
+<center>
+<img src="../imgs/alg2.png" alt="alg2" style="height: 300px;margin-left:20pt;"/>
+</center>
+<blockquote>
+<p>疑问6：11行的cnt代表什么？可能是count，用来数被检测到的点的数量。</p>
+</blockquote>
+<p>第25行，检测是否有足够多的点被检测到，以及误差足够小，然后才能确认为bounding box。</p>
+<p>（算法2还没有理解清楚，看完一遍再回来看看。）</p>
+<h2 id="推广到多分类问题">（5）推广到多分类问题</h2>
+<p>给每个点增加一个class score属性，用cross entropy loss。</p>
+<p>然后和算法2类似。</p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
