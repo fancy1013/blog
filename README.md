@@ -6,8 +6,8 @@ This repo contains my personal blog, and a simple/stupid "framework" (nope) to h
 
 - write your posts in Markdown under `blog/posts/src`
 - run `make` to generate HTML from Markdown
-- run `make rss` to generate RSS Feed, `blog/atom.xml`
-- run `make sitemap` to generate sitemap, `blog/sitemap.xml`
+- run `py rss_generator.py` to generate RSS Feed, `blog/atom.xml`
+- run `py sitemap_generator.py` to generate sitemap, `blog/sitemap.xml`
 - run `make sync` to sync the blog to server
 
 ## Misc
