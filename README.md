@@ -8,7 +8,6 @@ This repo contains my personal blog.
 - run `make` to generate HTML from Markdown(no chinese character in file name!)
 - run `py rss_generator.py` to generate RSS Feed, `blog/atom.xml`
 - run `py sitemap_generator.py` to generate sitemap, `blog/sitemap.xml`
-- run `make sync` to sync the blog to server
 
 ## Misc
 
