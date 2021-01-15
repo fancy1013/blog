@@ -7,7 +7,7 @@ import arrow
 path = 'posts/'
 html_names = list(filter(lambda x: x[-5:] == '.html', (os.listdir(path))))
 
-url = 'http://yanjieze.xyz/blog/'
+url = 'http://yanjieze.xyz/'
 
 sitemap_preamble = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset
@@ -19,11 +19,11 @@ sitemap_preamble = """<?xml version="1.0" encoding="UTF-8"?>
 
 sitemap_body = """
 <url>
-  <loc>http://yanjieze.xyz/blog/</loc>
+  <loc>http://yanjieze.xyz/</loc>
   <priority>1.00</priority>
 </url>
 <url>
-  <loc>http://yanjieze.xyz/blog/about.html</loc>
+  <loc>http://yanjieze.xyz/about.html</loc>
   <priority>0.80</priority>
 </url>
 """

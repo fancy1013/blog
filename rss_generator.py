@@ -13,12 +13,12 @@ rss_head = """
   <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Ground Oddity</title>
   <subtitle>Personal blog of Jiahao Cai</subtitle>
-  <link href="http://yanjieze.xyz/blog/"/>
-  <link href="http://yanjieze.xyz/blog/atom.xml" rel="self" type="application/atom+xml"/>
+  <link href="http://yanjieze.xyz/"/>
+  <link href="http://yanjieze.xyz/atom.xml" rel="self" type="application/atom+xml"/>
   <author>
     <name>Yanjie Ze</name>
   </author>
-  <id>http://yanjieze.xyz/blog/</id>
+  <id>http://yanjieze.xyz/</id>
 """
 rss_head += "<updated>" + str(arrow.now()) + "</updated>\n"
 
@@ -44,7 +44,7 @@ for html_name in html_names:
   updated = parsed_html.find('meta', attrs={'name':"last_modified"}).get("content")
   rss_body += '<updated>' + updated + '</updated>'
 
-  url = 'http://yanjieze.xyz/blog/posts/' + html_name
+  url = 'http://yanjieze.xyz/posts/' + html_name
   rss_body += '<link href="' + url + '"/>'
   rss_body += '<id>' + url + '</id>'
   rss_body += '<author> <name>Yanjie Ze</name> </author>'

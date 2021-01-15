@@ -18,4 +18,4 @@ Enjoy
 
 ---
 
-P.S. visit my blog at http://yanjieze.xyz/blog (mostly in Chinese)
+P.S. visit my blog at http://yanjieze.xyz (mostly in Chinese)
