@@ -133,7 +133,10 @@ G_scale：**H×D×W×3**
 
 具体算法如下图。
 
-![](postimage/alg1.png)
+<center>
+<img src="../imgs/alg1.png" alt="alg1" style="height: 300px;margin-left:20pt;"/>
+</center>
+
 
 算法1说明：
 
