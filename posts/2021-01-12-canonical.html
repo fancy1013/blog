@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-01-17T00:56:17Z" />
+  <meta name="last_modified" content="2021-01-21T01:08:59Z" />
   <meta name="published" content="Jan 12,2021" />
   <title>Canonical Voting：更好的投票机制</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -118,7 +118,6 @@
 <p>疑问6：11行的cnt代表什么？可能是count，用来数被检测到的点的数量。</p>
 </blockquote>
 <p>第25行，检测是否有足够多的点被检测到，以及误差足够小，然后才能确认为bounding box。</p>
-<p>（算法2还没有理解清楚，看完一遍再回来看看。）</p>
 <h2 id="推广到多分类问题">（5）推广到多分类问题</h2>
 <p>给每个点增加一个class score属性，用cross entropy loss。</p>
 <p>然后和算法2类似。</p>

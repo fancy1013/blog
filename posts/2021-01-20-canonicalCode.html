@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-01-21T01:10:48Z" />
+  <title>Canonical Voting Algorithm: Code</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Canonical Voting Algorithm: Code</h1>
+</header>
+<p>[TOC]</p>
+<h1 id="零前置知识">零、前置知识</h1>
+<p>[TOC]</p>
+<p>1.<code>__global__</code></p>
+<p>This is a CUDA C keyword (declaration specifier)</p>
+<p>核函数的声明。</p>
+<p>2.<code>atomicAdd</code></p>
+<p>int <strong>atomicAdd</strong>(int* address, int val); reads the 32-bit word old from the location pointed to by address in global or shared memory, computes (old + val), and stores the result back to memory at the same address. The function returns old.</p>
+<p>3.用CUDA实现加法.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true"></a>__global__ <span class="dt">void</span> add(<span class="dt">float</span>* x, <span class="dt">float</span>* y, <span class="dt">float</span>* z, <span class="dt">int</span> n)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true"></a>{</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true"></a>    <span class="dt">int</span> index = threadIdx.x + blockIdx.x*blockDim.x;<span class="co">//全局索引</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true"></a>    <span class="dt">int</span> stride = blockDim.x * gridDim.x;<span class="co">//步长</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="dt">int</span> i=index;i&lt;n;i+=stride)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true"></a>    {</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true"></a>        z[i] = x[i]+y[i];</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true"></a>    }</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true"></a>}</span></code></pre></div>
+<p>main:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="dt">int</span> main()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a>{</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true"></a>    <span class="dt">int</span> N=<span class="dv">1</span>&lt;&lt;<span class="dv">20</span>;</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true"></a>    <span class="dt">int</span> nBytes = N * <span class="kw">sizeof</span>(<span class="dt">float</span>);</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true"></a>    </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true"></a>    <span class="dt">float</span> *x, *y, *z;</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true"></a>    x = (<span class="dt">float</span>*)malloc(nBytes);</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true"></a>    y = (<span class="dt">float</span>*)malloc(nBytes);</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true"></a>    z = (<span class="dt">float</span>*)malloc(nBytes);</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true"></a>    <span class="co">//这里是申请了存放向量的地址空间,并转化为float类型的指针</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true"></a>    </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true"></a>    <span class="cf">for</span>(<span class="dt">int</span> i=<span class="dv">0</span>;i&lt;N;++i)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true"></a>    {</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true"></a>        x[i] = <span class="fl">10.0</span>;</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true"></a>        y[i] = <span class="fl">20.0</span>;</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true"></a>    }</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true"></a>    <span class="co">//对向量的值进行初始化</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true"></a>    </span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true"></a>    <span class="dt">float</span> *d_x,*d_y,*d_z;</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true"></a>    cudaMalloc((<span class="dt">void</span>**)&amp;d_x, nBytes);<span class="co">//这个函数申请了在device上的内存</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true"></a>    cudaMalloc((<span class="dt">void</span>**)&amp;d_y, nBytes);</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true"></a>    cudaMalloc((<span class="dt">void</span>**)&amp;d_z, nBytes);</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true"></a>    <span class="co">//申请在device上的内存</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true"></a>    </span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true"></a>    cudaMemcpy((<span class="dt">void</span>*)d_x, (<span class="dt">void</span>*)x, nBytes, cudaMemcpyHostToDevice);</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true"></a>    cudaMemcpy((<span class="dt">void</span>*)d_y, (<span class="dt">void</span>*)y, nBytes, cudaMemcpyHostToDevice);</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true"></a>    <span class="co">//将host数据拷贝到device上</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true"></a>    </span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true"></a>    dim3 blockSize(<span class="dv">256</span>);<span class="co">//定义kernel执行的block数量</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true"></a>    dim3 gridSize((N+blockSize.x-<span class="dv">1</span>)/blockSize.x);</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true"></a>    </span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true"></a>    add&lt;&lt;&lt;gridSize, blockSize&gt;&gt;&gt;(d_x,d_y,d_z,N);</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true"></a>    <span class="co">//执行kernel</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true"></a>    </span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true"></a>    cudaMemcpy((<span class="dt">void</span>*)z,(<span class="dt">void</span>*)d_z,mBytes,cudaMemcpyHostToDevice);</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true"></a>    <span class="co">//将结果从divice拷贝到host</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true"></a>    </span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true"></a>    cudaFree(d_x);</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true"></a>    cudaFree(d_y);</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true"></a>    cudaFree(d_z);</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true"></a>    <span class="co">//释放device内存</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true"></a>    </span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true"></a>    free(x);</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true"></a>    free(y);</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true"></a>    free(z);</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true"></a>    <span class="co">//释放host内存</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true"></a>    </span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true"></a>}</span></code></pre></div>
+<p>引入cudaMallocManaged函数对上面的代码优化：</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="dt">int</span> main()</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true"></a>{</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true"></a>    <span class="dt">int</span> N = <span class="dv">1</span> &lt;&lt; <span class="dv">20</span>;</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true"></a>    <span class="dt">int</span> nBytes = N * <span class="kw">sizeof</span>(<span class="dt">float</span>);</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true"></a>    </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true"></a>    <span class="co">// 申请托管内存</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true"></a>    <span class="dt">float</span> *x, *y, *z;</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true"></a>    cudaMallocManaged((<span class="dt">void</span>**)&amp;x, nBytes);</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true"></a>    cudaMallocManaged((<span class="dt">void</span>**)&amp;y, nBytes);</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true"></a>    cudaMallocManaged((<span class="dt">void</span>**)&amp;z, nBytes);</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true"></a>    <span class="co">// 初始化数据</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; N; ++i)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true"></a>    {</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true"></a>        x[i] = <span class="fl">10.0</span>;</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true"></a>        y[i] = <span class="fl">20.0</span>;</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true"></a>    }</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true"></a>    <span class="co">// 定义kernel的执行配置</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true"></a>    dim3 blockSize(<span class="dv">256</span>);</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true"></a>    dim3 gridSize((N + blockSize.x - <span class="dv">1</span>) / blockSize.x);</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true"></a>    <span class="co">// 执行kernel</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true"></a>    add &lt;&lt; &lt; gridSize, blockSize &gt;&gt; &gt;(x, y, z, N);</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true"></a>    <span class="co">// 同步device 保证结果能正确访问</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true"></a>    cudaDeviceSynchronize();</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true"></a>    </span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true"></a>    <span class="co">// 检查执行结果</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true"></a>    <span class="dt">float</span> maxError = <span class="fl">0.0</span>;</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; N; i++)</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true"></a>        maxError = fmax(maxError, fabs(z[i] - <span class="fl">30.0</span>));</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true"></a>    std::cout &lt;&lt; <span class="st">&quot;最大误差: &quot;</span> &lt;&lt; maxError &lt;&lt; std::endl;</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true"></a>    <span class="co">// 释放内存</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true"></a>    cudaFree(x);</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true"></a>    cudaFree(y);</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true"></a>    cudaFree(z);</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true"></a></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true"></a>}</span></code></pre></div>
+<p>4.<code>__restrict__</code></p>
+<p>CUDA官方文档的解释：By making a, b, and c restricted pointers, the programmer asserts to the compiler that the pointers are in fact not aliased, which in this case means writes through c would never overwrite elements of a or b.</p>
+<p>大概说指针指向的内容不会被其他指针修改。</p>
+<h1 id="一hv_cuda_kernel.cu">一、hv_cuda_kernel.cu</h1>
+<p>[TOC]</p>
+<p><strong>这个文件是Canonical voting process实现的核心文件，主要实现了算法一。</strong></p>
+<p><strong>使用CUDA编写，进而对pytorch进行扩展。</strong></p>
+<h2 id="inculde">INCULDE</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;torch/extension.h&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;cuda.h&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;cuda_runtime.h&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&quot;helper_math.h&quot;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;thrust/device_vector.h&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;vector&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span></code></pre></div>
+<h2 id="hv_cuda_forward_kernel">hv_cuda_forward_kernel</h2>
+<p>一个前向传播的核函数，这个函数的流程<strong>和论文中的Algorithm1流程基本相同。</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a>template &lt;typename scalar_t&gt;</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a>__global__ <span class="dt">void</span> hv_cuda_forward_kernel(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt; points,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt; xyz_labels,<span class="co">//即LLC坐标</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt; scale_labels,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">1</span>, torch::RestrictPtrTraits&gt; obj_labels,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true"></a>    torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">3</span>, torch::RestrictPtrTraits&gt; grid_obj,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true"></a>    torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">4</span>, torch::RestrictPtrTraits&gt; grid_rot,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true"></a>    torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">4</span>, torch::RestrictPtrTraits&gt; grid_scale,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true"></a>    float3 corner,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">float</span>* __restrict__ res,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span>* __restrict__ num_rots)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true"></a>{</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span> c = blockIdx.x * blockDim.x + threadIdx.x;<span class="co">//即线程的全局索引</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true"></a>    <span class="cf">if</span> (c &lt; points.size(<span class="dv">0</span>)) {</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true"></a>        </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true"></a>        scalar_t objness = obj_labels[c];<span class="co">//即Alg1中的objectness</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true"></a>        float3 corr = make_float3(</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true"></a>            xyz_labels[c][<span class="dv">0</span>] * scale_labels[c][<span class="dv">0</span>],</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true"></a>            xyz_labels[c][<span class="dv">1</span>] * scale_labels[c][<span class="dv">1</span>],</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true"></a>            xyz_labels[c][<span class="dv">2</span>] * scale_labels[c][<span class="dv">2</span>]</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true"></a>        );<span class="co">//即Alg1中的v_i</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true"></a>        </span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true"></a>        float3 point = make_float3(points[c][<span class="dv">0</span>], points[c][<span class="dv">1</span>], points[c][<span class="dv">2</span>]);<span class="co">//即point的坐标</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true"></a>        <span class="dt">const</span> <span class="dt">float</span> rot_interval = <span class="dv">2</span> * <span class="fl">3.141592654</span><span class="bu">f</span> / (*num_rots);<span class="co">//即旋转的角度的间隔，将360度分成K个。</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true"></a>        </span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true"></a>        <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; (*num_rots); i++) { <span class="co">//寻找可能的朝向，K次循环</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true"></a>            <span class="dt">float</span> theta = i * rot_interval;</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true"></a>            float3 offset = make_float3(-cos(theta) * corr.x + sin(theta) * corr.z,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true"></a>                -corr.y, -sin(theta) * corr.x - cos(theta) * corr.z);<span class="co">//这个offset是什么呢？</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true"></a>            float3 center_grid = (point + offset - corner) / (*res);</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true"></a>            <span class="cf">if</span> (center_grid.x &lt; <span class="dv">0</span> || center_grid.y &lt; <span class="dv">0</span> || center_grid.z &lt; <span class="dv">0</span> || </span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true"></a>                center_grid.x &gt;= grid_obj.size(<span class="dv">0</span>) - <span class="dv">1</span> || center_grid.y &gt;= grid_obj.size(<span class="dv">1</span>) - <span class="dv">1</span> || center_grid.z &gt;= grid_obj.size(<span class="dv">2</span>) - <span class="dv">1</span>) {</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true"></a>                <span class="cf">continue</span>;</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true"></a>            }</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true"></a>            int3 center_grid_floor = make_int3(center_grid);</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true"></a>            int3 center_grid_ceil = center_grid_floor + <span class="dv">1</span>;</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true"></a>            float3 residual = fracf(center_grid);</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true"></a>            </span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true"></a>            float3 w0 = <span class="fl">1.</span><span class="bu">f</span> - residual;</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true"></a>            float3 w1 = residual;</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true"></a>            </span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true"></a>            <span class="co">//附近8个格点的投票</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true"></a>            <span class="dt">float</span> lll = w0.x * w0.y * w0.z * objness;</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true"></a>            <span class="dt">float</span> llh = w0.x * w0.y * w1.z * objness;</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true"></a>            <span class="dt">float</span> lhl = w0.x * w1.y * w0.z * objness;</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true"></a>            <span class="dt">float</span> lhh = w0.x * w1.y * w1.z * objness;</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true"></a>            <span class="dt">float</span> hll = w1.x * w0.y * w0.z * objness;</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true"></a>            <span class="dt">float</span> hlh = w1.x * w0.y * w1.z * objness;</span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true"></a>            <span class="dt">float</span> hhl = w1.x * w1.y * w0.z * objness;</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true"></a>            <span class="dt">float</span> hhh = w1.x * w1.y * w1.z * objness;</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true"></a>            </span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true"></a>            <span class="co">//用atomicAdd对投票结果进行累积，要对三个需要投票的进行累积，所以下面是三个循环</span></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true"></a>            atomicAdd(&amp;grid_obj[center_grid_floor.x][center_grid_floor.y][center_grid_floor.z], lll);</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true"></a>            atomicAdd(&amp;grid_obj[center_grid_floor.x][center_grid_floor.y][center_grid_ceil.z], llh);</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true"></a>            atomicAdd(&amp;grid_obj[center_grid_floor.x][center_grid_ceil.y][center_grid_floor.z], lhl);</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true"></a>            atomicAdd(&amp;grid_obj[center_grid_floor.x][center_grid_ceil.y][center_grid_ceil.z], lhh);</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true"></a>            atomicAdd(&amp;grid_obj[center_grid_ceil.x][center_grid_floor.y][center_grid_floor.z], hll);</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true"></a>            atomicAdd(&amp;grid_obj[center_grid_ceil.x][center_grid_floor.y][center_grid_ceil.z], hlh);</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true"></a>            atomicAdd(&amp;grid_obj[center_grid_ceil.x][center_grid_ceil.y][center_grid_floor.z], hhl);</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true"></a>            atomicAdd(&amp;grid_obj[center_grid_ceil.x][center_grid_ceil.y][center_grid_ceil.z], hhh);</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true"></a></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true"></a>            <span class="dt">float</span> rot_vec[<span class="dv">2</span>] = {cos(theta), sin(theta)};</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true"></a>            <span class="cf">for</span> (<span class="dt">int</span> j = <span class="dv">0</span>; j &lt; <span class="dv">2</span>; j++) {</span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true"></a>                <span class="dt">float</span> rot = rot_vec[j];</span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true"></a>                atomicAdd(&amp;grid_rot[center_grid_floor.x][center_grid_floor.y][center_grid_floor.z][j], lll * rot);</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true"></a>                atomicAdd(&amp;grid_rot[center_grid_floor.x][center_grid_floor.y][center_grid_ceil.z][j], llh * rot);</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true"></a>                atomicAdd(&amp;grid_rot[center_grid_floor.x][center_grid_ceil.y][center_grid_floor.z][j], lhl * rot);</span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true"></a>                atomicAdd(&amp;grid_rot[center_grid_floor.x][center_grid_ceil.y][center_grid_ceil.z][j], lhh * rot);</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true"></a>                atomicAdd(&amp;grid_rot[center_grid_ceil.x][center_grid_floor.y][center_grid_floor.z][j], hll * rot);</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true"></a>                atomicAdd(&amp;grid_rot[center_grid_ceil.x][center_grid_floor.y][center_grid_ceil.z][j], hlh * rot);</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true"></a>                atomicAdd(&amp;grid_rot[center_grid_ceil.x][center_grid_ceil.y][center_grid_floor.z][j], hhl * rot);</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true"></a>                atomicAdd(&amp;grid_rot[center_grid_ceil.x][center_grid_ceil.y][center_grid_ceil.z][j], hhh * rot);</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true"></a>            }</span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true"></a></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true"></a>            <span class="cf">for</span> (<span class="dt">int</span> j = <span class="dv">0</span>; j &lt; <span class="dv">3</span>; j++) {</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true"></a>                <span class="dt">float</span> scale = scale_labels[c][j];</span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true"></a>                atomicAdd(&amp;grid_scale[center_grid_floor.x][center_grid_floor.y][center_grid_floor.z][j], lll * scale);</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true"></a>                atomicAdd(&amp;grid_scale[center_grid_floor.x][center_grid_floor.y][center_grid_ceil.z][j], llh * scale);</span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true"></a>                atomicAdd(&amp;grid_scale[center_grid_floor.x][center_grid_ceil.y][center_grid_floor.z][j], lhl * scale);</span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true"></a>                atomicAdd(&amp;grid_scale[center_grid_floor.x][center_grid_ceil.y][center_grid_ceil.z][j], lhh * scale);</span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true"></a>                atomicAdd(&amp;grid_scale[center_grid_ceil.x][center_grid_floor.y][center_grid_floor.z][j], hll * scale);</span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true"></a>                atomicAdd(&amp;grid_scale[center_grid_ceil.x][center_grid_floor.y][center_grid_ceil.z][j], hlh * scale);</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true"></a>                atomicAdd(&amp;grid_scale[center_grid_ceil.x][center_grid_ceil.y][center_grid_floor.z][j], hhl * scale);</span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true"></a>                atomicAdd(&amp;grid_scale[center_grid_ceil.x][center_grid_ceil.y][center_grid_ceil.z][j], hhh * scale);</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true"></a>            }</span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true"></a>            </span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true"></a>        }</span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true"></a>    }</span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true"></a>}</span></code></pre></div>
+<h2 id="hv_cuda_average_kernel">hv_cuda_average_kernel</h2>
+<p><strong>对应Algorithm1中的14行：Normalize。</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>template &lt;typename scalar_t&gt;</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>__global__ <span class="dt">void</span> hv_cuda_average_kernel(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">3</span>, torch::RestrictPtrTraits&gt; grid,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true"></a>    torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">4</span>, torch::RestrictPtrTraits&gt; grid_rot,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true"></a>    torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">4</span>, torch::RestrictPtrTraits&gt; grid_scale)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true"></a>{</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span> x = blockIdx.x * blockDim.x + threadIdx.x;</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span> y = blockIdx.y * blockDim.y + threadIdx.y;</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span> z = blockIdx.z * blockDim.z + threadIdx.z;</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true"></a>    <span class="cf">if</span> (x &gt;= grid.size(<span class="dv">0</span>) || y &gt;= grid.size(<span class="dv">1</span>) || z &gt;= grid.size(<span class="dv">2</span>)) <span class="cf">return</span>;</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true"></a>    <span class="dt">float</span> w = grid[x][y][z];</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="dt">int</span> j = <span class="dv">0</span>; j &lt; <span class="dv">2</span>; j++) {</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true"></a>        grid_rot[x][y][z][j] /= w + <span class="fl">1e-7</span>;</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true"></a>    }</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true"></a>    <span class="cf">for</span> (<span class="dt">int</span> j = <span class="dv">0</span>; j &lt; <span class="dv">3</span>; j++) {</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true"></a>        grid_scale[x][y][z][j] /= w + <span class="fl">1e-7</span>;</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true"></a>    }</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true"></a>}</span></code></pre></div>
+<h2 id="hv_cuda_forward">hv_cuda_forward</h2>
+<p><strong>对之前的hv_cuda_forward_kernel进行一个封装，返回投票结果。</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a>std::vector&lt;torch::Tensor&gt; hv_cuda_forward(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true"></a>    torch::Tensor points,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true"></a>    torch::Tensor xyz_labels,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true"></a>    torch::Tensor scale_labels,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true"></a>    torch::Tensor obj_labels,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true"></a>    torch::Tensor res,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true"></a>    torch::Tensor num_rots) </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true"></a>{</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true"></a>    <span class="dt">auto</span> corners = torch::stack({std::get&lt;<span class="dv">0</span>&gt;(torch::min(points, <span class="dv">0</span>)), std::get&lt;<span class="dv">0</span>&gt;(torch::max(points, <span class="dv">0</span>))}, <span class="dv">0</span>);  <span class="co">// 2 x 3</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true"></a>    <span class="dt">auto</span> corner = corners[<span class="dv">0</span>];  <span class="co">// 3</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true"></a>    <span class="dt">auto</span> diff = (corners[<span class="dv">1</span>] - corners[<span class="dv">0</span>]) / res;  <span class="co">// 3</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true"></a>    <span class="dt">auto</span> grid_obj = torch::zeros({diff[<span class="dv">0</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>, diff[<span class="dv">1</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>, diff[<span class="dv">2</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>}, points.options());</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true"></a>    <span class="dt">auto</span> grid_rot = torch::zeros({diff[<span class="dv">0</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>, diff[<span class="dv">1</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>, diff[<span class="dv">2</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>, <span class="dv">2</span>}, points.options());</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true"></a>    <span class="dt">auto</span> grid_scale = torch::zeros({diff[<span class="dv">0</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>, diff[<span class="dv">1</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>, diff[<span class="dv">2</span>].item().to&lt;<span class="dt">int</span>&gt;() + <span class="dv">1</span>, <span class="dv">3</span>}, points.options());</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true"></a>    </span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true"></a>    <span class="co">// std::cout &lt;&lt; grid.size(0) &lt;&lt; &quot;, &quot; &lt;&lt; grid.size(1) &lt;&lt; &quot;, &quot; &lt;&lt; grid.size(2) &lt;&lt; std::endl;</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true"></a>    <span class="co">// std::cout &lt;&lt; corner &lt;&lt; std::endl;</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true"></a>    </span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span> threads = <span class="dv">1024</span>;</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true"></a>    <span class="dt">const</span> dim3 blocks((points.size(<span class="dv">0</span>) + threads - <span class="dv">1</span>) / threads);</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true"></a>    </span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true"></a>    AT_DISPATCH_FLOATING_TYPES(points.type(), <span class="st">&quot;hv_forward_cuda&quot;</span>, ([&amp;] {</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true"></a>        hv_cuda_forward_kernel&lt;scalar_t&gt;&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;(</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true"></a>            points.packed_accessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true"></a>            xyz_labels.packed_accessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true"></a>            scale_labels.packed_accessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true"></a>            obj_labels.packed_accessor32&lt;scalar_t, <span class="dv">1</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true"></a>            grid_obj.packed_accessor32&lt;scalar_t, <span class="dv">3</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true"></a>            grid_rot.packed_accessor32&lt;scalar_t, <span class="dv">4</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true"></a>            grid_scale.packed_accessor32&lt;scalar_t, <span class="dv">4</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true"></a>            make_float3(corner[<span class="dv">0</span>].item().to&lt;<span class="dt">float</span>&gt;(), corner[<span class="dv">1</span>].item().to&lt;<span class="dt">float</span>&gt;(), corner[<span class="dv">2</span>].item().to&lt;<span class="dt">float</span>&gt;()),</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true"></a>            res.data&lt;<span class="dt">float</span>&gt;(),</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true"></a>            num_rots.data&lt;<span class="dt">int</span>&gt;()</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true"></a>        );</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true"></a>      }));</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true"></a>    </span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true"></a>    AT_DISPATCH_FLOATING_TYPES(points.type(), <span class="st">&quot;hv_average_cuda&quot;</span>, ([&amp;] {</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true"></a>        hv_cuda_average_kernel&lt;scalar_t&gt;&lt;&lt;&lt;dim3((grid_obj.size(<span class="dv">0</span>) + <span class="dv">7</span>) / <span class="dv">8</span>, (grid_obj.size(<span class="dv">1</span>) + <span class="dv">7</span>) / <span class="dv">8</span>, (grid_obj.size(<span class="dv">2</span>) + <span class="dv">7</span>) / <span class="dv">8</span>), dim3(<span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">8</span>)&gt;&gt;&gt;(</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true"></a>            grid_obj.packed_accessor32&lt;scalar_t, <span class="dv">3</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true"></a>            grid_rot.packed_accessor32&lt;scalar_t, <span class="dv">4</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true"></a>            grid_scale.packed_accessor32&lt;scalar_t, <span class="dv">4</span>, torch::RestrictPtrTraits&gt;()</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true"></a>        );</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true"></a>    }));</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true"></a>    <span class="cf">return</span> {grid_obj, grid_rot, grid_scale};</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true"></a>}</span></code></pre></div>
+<h2 id="hv_cuda_backward_kernel">hv_cuda_backward_kernel</h2>
+<p>实现反向传播的kernel部分。</p>
+<p>前半部分和forward几乎一样。</p>
+<p>疑问：后半部分是什么意思呢？</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true"></a>template &lt;typename scalar_t&gt;</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true"></a>__global__ <span class="dt">void</span> hv_cuda_backward_kernel(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">3</span>, torch::RestrictPtrTraits&gt; grad_grid,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt; points,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt; xyz_labels,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt; scale_labels,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true"></a>    <span class="dt">const</span> torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">1</span>, torch::RestrictPtrTraits&gt; obj_labels,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true"></a>    <span class="co">// torch::PackedTensorAccessor32&lt;scalar_t, 2, torch::RestrictPtrTraits&gt; d_points,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true"></a>    torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt; d_xyz_labels,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true"></a>    torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt; d_scale_labels,</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true"></a>    torch::PackedTensorAccessor32&lt;scalar_t, <span class="dv">1</span>, torch::RestrictPtrTraits&gt; d_obj_labels,</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true"></a>    float3 corner,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">float</span>* __restrict__ res,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span>* __restrict__ num_rots)</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true"></a>{</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span> c = blockIdx.x * blockDim.x + threadIdx.x;</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true"></a>    <span class="cf">if</span> (c &lt; points.size(<span class="dv">0</span>)) {</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true"></a>        </span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true"></a>        scalar_t objness = obj_labels[c];</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true"></a>        float3 corr = make_float3(</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true"></a>            xyz_labels[c][<span class="dv">0</span>] * scale_labels[c][<span class="dv">0</span>],</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true"></a>            xyz_labels[c][<span class="dv">1</span>] * scale_labels[c][<span class="dv">1</span>],</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true"></a>            xyz_labels[c][<span class="dv">2</span>] * scale_labels[c][<span class="dv">2</span>]</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true"></a>        );</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true"></a>        float3 point = make_float3(points[c][<span class="dv">0</span>], points[c][<span class="dv">1</span>], points[c][<span class="dv">2</span>]);</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true"></a>        <span class="dt">float</span> rot_interval = <span class="dv">2</span> * <span class="fl">3.141592654</span><span class="bu">f</span> / (*num_rots);</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true"></a>        <span class="cf">for</span> (<span class="dt">int</span> i = <span class="dv">0</span>; i &lt; (*num_rots); i++) {</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true"></a>            <span class="dt">float</span> theta = i * rot_interval;</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true"></a>            float3 offset = make_float3(-cos(theta) * corr.x + sin(theta) * corr.z,</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true"></a>                -corr.y, -sin(theta) * corr.x - cos(theta) * corr.z);</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true"></a>            float3 center_grid = (point + offset - corner) / (*res);</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true"></a>            <span class="cf">if</span> (center_grid.x &lt; <span class="dv">0</span> || center_grid.y &lt; <span class="dv">0</span> || center_grid.z &lt; <span class="dv">0</span> || </span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true"></a>                center_grid.x &gt;= grad_grid.size(<span class="dv">0</span>) - <span class="dv">1</span> || center_grid.y &gt;= grad_grid.size(<span class="dv">1</span>) - <span class="dv">1</span> || center_grid.z &gt;= grad_grid.size(<span class="dv">2</span>) - <span class="dv">1</span>) {</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true"></a>                <span class="cf">continue</span>;</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true"></a>            }</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true"></a>            int3 center_grid_floor = make_int3(center_grid);</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true"></a>            int3 center_grid_ceil = center_grid_floor + <span class="dv">1</span>;</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true"></a>            float3 residual = fracf(center_grid);</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true"></a>            </span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true"></a>            float3 w0 = <span class="fl">1.</span><span class="bu">f</span> - residual;</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true"></a>            float3 w1 = residual;</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true"></a>            </span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true"></a>            d_obj_labels[c] += grad_grid[center_grid_floor.x][center_grid_floor.y][center_grid_floor.z] * w0.x * w0.y * w0.z;</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true"></a>            d_obj_labels[c] += grad_grid[center_grid_floor.x][center_grid_floor.y][center_grid_ceil.z] * w0.x * w0.y * w1.z;</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true"></a>            d_obj_labels[c] += grad_grid[center_grid_floor.x][center_grid_ceil.y][center_grid_floor.z] * w0.x * w1.y * w0.z;</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true"></a>            d_obj_labels[c] += grad_grid[center_grid_floor.x][center_grid_ceil.y][center_grid_ceil.z] * w0.x * w1.y * w1.z;</span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true"></a>            d_obj_labels[c] += grad_grid[center_grid_ceil.x][center_grid_floor.y][center_grid_floor.z] * w1.x * w0.y * w0.z;</span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true"></a>            d_obj_labels[c] += grad_grid[center_grid_ceil.x][center_grid_floor.y][center_grid_ceil.z] * w1.x * w0.y * w1.z;</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true"></a>            d_obj_labels[c] += grad_grid[center_grid_ceil.x][center_grid_ceil.y][center_grid_floor.z] * w1.x * w1.y * w0.z;</span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true"></a>            d_obj_labels[c] += grad_grid[center_grid_ceil.x][center_grid_ceil.y][center_grid_ceil.z] * w1.x * w1.y * w1.z;</span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true"></a></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true"></a>            float3 dgrid_dcenter = make_float3(</span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true"></a>                - grad_grid[center_grid_floor.x][center_grid_floor.y][center_grid_floor.z] * w0.y * w0.z</span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true"></a>                - grad_grid[center_grid_floor.x][center_grid_floor.y][center_grid_ceil.z] * w0.y * w1.z</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true"></a>                - grad_grid[center_grid_floor.x][center_grid_ceil.y][center_grid_floor.z] * w1.y * w0.z</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true"></a>                - grad_grid[center_grid_floor.x][center_grid_ceil.y][center_grid_ceil.z] * w1.y * w1.z</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true"></a>                + grad_grid[center_grid_ceil.x][center_grid_floor.y][center_grid_floor.z] * w0.y * w0.z</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true"></a>                + grad_grid[center_grid_ceil.x][center_grid_floor.y][center_grid_ceil.z] * w0.y * w1.z</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true"></a>                + grad_grid[center_grid_ceil.x][center_grid_ceil.y][center_grid_floor.z] * w1.y * w0.z</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true"></a>                + grad_grid[center_grid_ceil.x][center_grid_ceil.y][center_grid_ceil.z] * w1.y * w1.z,</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true"></a>                - grad_grid[center_grid_floor.x][center_grid_floor.y][center_grid_floor.z] * w0.x * w0.z</span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true"></a>                - grad_grid[center_grid_floor.x][center_grid_floor.y][center_grid_ceil.z] * w0.x * w1.z</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true"></a>                + grad_grid[center_grid_floor.x][center_grid_ceil.y][center_grid_floor.z] * w0.x * w0.z</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true"></a>                + grad_grid[center_grid_floor.x][center_grid_ceil.y][center_grid_ceil.z] * w0.x * w1.z</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true"></a>                - grad_grid[center_grid_ceil.x][center_grid_floor.y][center_grid_floor.z] * w1.x * w0.z</span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true"></a>                - grad_grid[center_grid_ceil.x][center_grid_floor.y][center_grid_ceil.z] * w1.x * w1.z</span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true"></a>                + grad_grid[center_grid_ceil.x][center_grid_ceil.y][center_grid_floor.z] * w1.x * w0.z</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true"></a>                + grad_grid[center_grid_ceil.x][center_grid_ceil.y][center_grid_ceil.z] * w1.x * w1.z,</span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true"></a>                - grad_grid[center_grid_floor.x][center_grid_floor.y][center_grid_floor.z] * w0.x * w0.y</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true"></a>                + grad_grid[center_grid_floor.x][center_grid_floor.y][center_grid_ceil.z] * w0.x * w0.y</span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true"></a>                - grad_grid[center_grid_floor.x][center_grid_ceil.y][center_grid_floor.z] * w0.x * w1.y</span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true"></a>                + grad_grid[center_grid_floor.x][center_grid_ceil.y][center_grid_ceil.z] * w0.x * w1.y</span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true"></a>                - grad_grid[center_grid_ceil.x][center_grid_floor.y][center_grid_floor.z] * w1.x * w0.y</span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true"></a>                + grad_grid[center_grid_ceil.x][center_grid_floor.y][center_grid_ceil.z] * w1.x * w0.y</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true"></a>                - grad_grid[center_grid_ceil.x][center_grid_ceil.y][center_grid_floor.z] * w1.x * w1.y</span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true"></a>                + grad_grid[center_grid_ceil.x][center_grid_ceil.y][center_grid_ceil.z] * w1.x * w1.y) * objness;</span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true"></a>            </span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true"></a>            <span class="co">// d_points[c][0] += dgrid_dcenter.x;</span></span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true"></a>            <span class="co">// d_points[c][1] += dgrid_dcenter.y;</span></span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true"></a>            <span class="co">// d_points[c][2] += dgrid_dcenter.z;</span></span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true"></a></span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true"></a>            float3 d_corr = make_float3(- cos(theta) * dgrid_dcenter.x - sin(theta) * dgrid_dcenter.z,</span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true"></a>                -dgrid_dcenter.y, sin(theta) * dgrid_dcenter.x - cos(theta) * dgrid_dcenter.z);</span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true"></a></span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true"></a>            d_xyz_labels[c][<span class="dv">0</span>] += d_corr.x * scale_labels[c][<span class="dv">0</span>];</span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true"></a>            d_xyz_labels[c][<span class="dv">1</span>] += d_corr.y * scale_labels[c][<span class="dv">1</span>];</span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true"></a>            d_xyz_labels[c][<span class="dv">2</span>] += d_corr.z * scale_labels[c][<span class="dv">2</span>];</span>
+<span id="cb8-88"><a href="#cb8-88" aria-hidden="true"></a></span>
+<span id="cb8-89"><a href="#cb8-89" aria-hidden="true"></a>            d_scale_labels[c][<span class="dv">0</span>] += d_corr.x * xyz_labels[c][<span class="dv">0</span>];</span>
+<span id="cb8-90"><a href="#cb8-90" aria-hidden="true"></a>            d_scale_labels[c][<span class="dv">1</span>] += d_corr.y * xyz_labels[c][<span class="dv">1</span>];</span>
+<span id="cb8-91"><a href="#cb8-91" aria-hidden="true"></a>            d_scale_labels[c][<span class="dv">2</span>] += d_corr.z * xyz_labels[c][<span class="dv">2</span>];</span>
+<span id="cb8-92"><a href="#cb8-92" aria-hidden="true"></a>        }</span>
+<span id="cb8-93"><a href="#cb8-93" aria-hidden="true"></a>    }</span>
+<span id="cb8-94"><a href="#cb8-94" aria-hidden="true"></a>}</span>
+<span id="cb8-95"><a href="#cb8-95" aria-hidden="true"></a></span></code></pre></div>
+<p>接着是一个叫hv_cuda_backward的函数，封装了kernel。</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true"></a>std::vector&lt;torch::Tensor&gt; hv_cuda_backward(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true"></a>    torch::Tensor grad_grid,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true"></a>    torch::Tensor points,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true"></a>    torch::Tensor xyz_labels,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true"></a>    torch::Tensor scale_labels,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true"></a>    torch::Tensor obj_labels,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true"></a>    torch::Tensor res,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true"></a>    torch::Tensor num_rots) </span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true"></a>{</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true"></a>    <span class="dt">auto</span> corners = torch::stack({std::get&lt;<span class="dv">0</span>&gt;(torch::min(points, <span class="dv">0</span>)), std::get&lt;<span class="dv">0</span>&gt;(torch::max(points, <span class="dv">0</span>))}, <span class="dv">0</span>);  <span class="co">// 2 x 3</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true"></a>    <span class="dt">auto</span> corner = corners[<span class="dv">0</span>];  <span class="co">// 3</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true"></a>    <span class="dt">auto</span> diff = (corners[<span class="dv">1</span>] - corners[<span class="dv">0</span>]) / res;  <span class="co">// 3</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true"></a>    <span class="co">// auto d_points = torch::zeros_like(points);</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true"></a>    <span class="dt">auto</span> d_xyz_labels = torch::zeros_like(xyz_labels);</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true"></a>    <span class="dt">auto</span> d_scale_labels = torch::zeros_like(scale_labels);</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true"></a>    <span class="dt">auto</span> d_obj_labels = torch::zeros_like(obj_labels);</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true"></a>    </span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true"></a>    <span class="dt">const</span> <span class="dt">int</span> threads = <span class="dv">512</span>;</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true"></a>    <span class="dt">const</span> dim3 blocks((points.size(<span class="dv">0</span>) + threads - <span class="dv">1</span>) / threads);</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true"></a></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true"></a>    AT_DISPATCH_FLOATING_TYPES(points.type(), <span class="st">&quot;hv_backward_cuda&quot;</span>, ([&amp;] {</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true"></a>        hv_cuda_backward_kernel&lt;scalar_t&gt;&lt;&lt;&lt;blocks, threads&gt;&gt;&gt;(</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true"></a>            grad_grid.packed_accessor32&lt;scalar_t, <span class="dv">3</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true"></a>            points.packed_accessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true"></a>            xyz_labels.packed_accessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true"></a>            scale_labels.packed_accessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true"></a>            obj_labels.packed_accessor32&lt;scalar_t, <span class="dv">1</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true"></a>            <span class="co">// d_points.packed_accessor32&lt;scalar_t, 2, torch::RestrictPtrTraits&gt;(),</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true"></a>            d_xyz_labels.packed_accessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true"></a>            d_scale_labels.packed_accessor32&lt;scalar_t, <span class="dv">2</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true"></a>            d_obj_labels.packed_accessor32&lt;scalar_t, <span class="dv">1</span>, torch::RestrictPtrTraits&gt;(),</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true"></a>            make_float3(corner[<span class="dv">0</span>].item().to&lt;<span class="dt">float</span>&gt;(), corner[<span class="dv">1</span>].item().to&lt;<span class="dt">float</span>&gt;(), corner[<span class="dv">2</span>].item().to&lt;<span class="dt">float</span>&gt;()),</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true"></a>            res.data&lt;<span class="dt">float</span>&gt;(),</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true"></a>            num_rots.data&lt;<span class="dt">int</span>&gt;()</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true"></a>        );</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true"></a>      }));</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true"></a>    <span class="cf">return</span> {d_xyz_labels, d_scale_labels, d_obj_labels};</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true"></a>}</span></code></pre></div>
+<p>接着实现了一个2维版本的canonical hough voting，暂且不做记录。</p>
+<h1 id="二hv_cuda.cpp">二、hv_cuda.cpp</h1>
+<p>[TOC]</p>
+<p>主要是对hv_cuda_kernel.cu的内容进行封装。</p>
+<p>定义了一些函数来检查输入。</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true"></a><span class="pp">#define CHECK_CUDA</span>(x)<span class="pp"> </span>TORCH_CHECK(x.type().is_cuda(),<span class="pp"> #</span>x<span class="pp"> </span><span class="st">&quot; must be a CUDA tensor&quot;</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true"></a><span class="pp">#define CHECK_CONTIGUOUS</span>(x)<span class="pp"> </span>TORCH_CHECK(x.is_contiguous(),<span class="pp"> #</span>x<span class="pp"> </span><span class="st">&quot; must be contiguous&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true"></a><span class="pp">#define CHECK_INPUT</span>(x)<span class="pp"> </span>CHECK_CUDA(x);<span class="pp"> </span>CHECK_CONTIGUOUS(x)</span></code></pre></div>
+<p>首先，声明CUDA的函数：</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true"></a><span class="bu">std::</span>vector&lt;torch::Tensor&gt; hv_cuda_forward(</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true"></a>    torch::Tensor points,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true"></a>    torch::Tensor xyz_labels,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true"></a>    torch::Tensor scale_labels,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true"></a>    torch::Tensor obj_labels,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true"></a>    torch::Tensor res,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true"></a>    torch::Tensor num_rots);</span></code></pre></div>
+<p>然后，定义torch可以调用的函数：</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true"></a><span class="bu">std::</span>vector&lt;torch::Tensor&gt; hv_forward(</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true"></a>    torch::Tensor points,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>    torch::Tensor xyz_labels,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>    torch::Tensor scale_labels,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true"></a>    torch::Tensor obj_labels,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true"></a>    torch::Tensor res,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true"></a>    torch::Tensor num_rots) {</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true"></a>  CHECK_INPUT(points);</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true"></a>  CHECK_INPUT(xyz_labels);</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true"></a>  CHECK_INPUT(scale_labels);</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true"></a>  CHECK_INPUT(obj_labels);</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true"></a>  CHECK_INPUT(res);</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true"></a>  CHECK_INPUT(num_rots);</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true"></a>  <span class="cf">return</span> hv_cuda_forward(points, xyz_labels, scale_labels, obj_labels, res, num_rots);</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true"></a>}</span></code></pre></div>
+<p>用类似的流程，定义了hv_backward,hv2d_forward。</p>
+<p>并且，在最后用PYBIND11进行链接。</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true"></a>  m.def(<span class="st">&quot;forward&quot;</span>, &amp;hv_forward, <span class="st">&quot;hv forward (CUDA)&quot;</span>);</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true"></a>  m.def(<span class="st">&quot;backward&quot;</span>, &amp;hv_backward, <span class="st">&quot;hv backward (CUDA)&quot;</span>);</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true"></a>  m.def(<span class="st">&quot;forward2d&quot;</span>, &amp;hv2d_forward, <span class="st">&quot;hv backward (CUDA)&quot;</span>);</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true"></a>  <span class="co">// m.def(&quot;2dbackward&quot;, &amp;hv2d_backward, &quot;hv backward (CUDA)&quot;);</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true"></a>}</span></code></pre></div>
+<h1 id="三setup.py">三、setup.py</h1>
+<p>用来进行模块的安装。</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a><span class="im">from</span> platform <span class="im">import</span> version</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true"></a><span class="im">from</span> setuptools <span class="im">import</span> setup </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true"></a><span class="im">from</span> torch.utils.cpp_extension <span class="im">import</span> BuildExtension, CUDAExtension</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true"></a>setup(</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true"></a>    name<span class="op">=</span><span class="st">&#39;houghvoting&#39;</span>, <span class="co">#总的模块的名字</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true"></a>    version<span class="op">=</span><span class="st">&#39;0.0.1&#39;</span>,<span class="co">#版本</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true"></a>    ext_modules<span class="op">=</span>[</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true"></a>        CUDAExtension(<span class="st">&#39;houghvoting.cuda&#39;</span>, [ <span class="co"># 用CUDA extention扩展出来的模块的名字</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true"></a>            <span class="st">&#39;src/hv_cuda.cpp&#39;</span>,             <span class="co">#链接的文件</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true"></a>            <span class="st">&#39;src/hv_cuda_kernel.cu&#39;</span>,</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true"></a>        ])</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true"></a>    ],</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true"></a>    cmdclass<span class="op">=</span>{</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true"></a>        <span class="st">&#39;build_ext&#39;</span>: BuildExtension</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true"></a>    })</span></code></pre></div>
+<p>这里有两个名字：houghvoting和houghvoting.cuda，前者是外部调用时的库名，后者是这个库內部构建时调用的库名。</p>
+<h1 id="四voting.py">四、voting.py</h1>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
