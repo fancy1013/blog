@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-01-24T00:32:13Z" />
+  <meta name="published" content="Jan 23, 2021" />
+  <title>LSTM原理与代码</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">LSTM原理与代码</h1>
+<p class="date">Jan 23, 2021</p>
+</header>
+<p>Long Short Term Memory, or LSTM</p>
+<h1 id="lstm原理">LSTM原理</h1>
+<blockquote>
+<p>很好的英文博客：<a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/">Understanding LSTM Networks</a></p>
+</blockquote>
+<blockquote>
+<p>知乎上的讲解：<a href="https://zhuanlan.zhihu.com/p/32085405">人人都能看懂的LSTM</a></p>
+</blockquote>
+<p>为了解决RNN的缺乏上下文联系的能力的问题，设计出LSTM，可以记忆长期的信息。 相比RNN只有一个传递状态，LSTM有两个传输状态，一个cell state，和一个hidden state。</p>
+<p>LSTM内部主要有三个阶段：</p>
+<ol type="1">
+<li>忘记阶段<br />
+</li>
+<li>选择记忆阶段</li>
+<li>输出阶段。</li>
+</ol>
+<center>
+<img src="../imgs/lstm.jpg" alt="lstm">
+</center>
+<h1 id="lstm代码">LSTM代码</h1>
+<p>pytorch官网有一段简单的范例：<a href="https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html">SEQUENCE MODELS AND LONG-SHORT TERM MEMORY NETWORKS</a></p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
