@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-01-26T15:53:36Z" />
+  <meta name="published" content="Jan 26, 2021" />
+  <title>Dynamic Graph CNN:动态图卷积</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Dynamic Graph CNN:动态图卷积</h1>
+<p class="date">Jan 22, 2021</p>
+</header>
+<h1 id="一介绍">一、介绍</h1>
+<p>原文中提到，为了解决<strong>Pointnet忽视点之间的几何关系</strong>的问题，提出了EdgeConv，可以抓住局部几何结构并且保持排列不变性。</p>
+<p>总结一下这篇文章的主要贡献： 1. 提出了EdgeConv，为了更好地获得局部几何特征，并保持排列不变性。 2. 展现了这个模型可以通过<strong>动态地更新层与层之间的图关系</strong>来从语义上组合点。 3. 证明了EdgeConv可以聚合进各种目前存在的点云处理方法。 4. 展现了EdgeConv可以达到SOTA的效果。 5. 提供了代码。</p>
+<h1 id="二相关工作">二、相关工作</h1>
+<h2 id="hand-crafted-features">Hand-Crafted Features</h2>
+<p>什么是hand-crafted features？ &gt; “Hand Crafted” features refer to properties derived using various algorithms using the information present in the image itself. For example, two simple features that can be extracted from images are edges and corners. A basic edge detector algorithm works by finding areas where the image intensity “suddenly” changes.</p>
+<p>就是角点和边缘之类的特征吧。</p>
+<p>Hand-crafted features可以分为两类：extrinsic和intrinsic。</p>
+<h2 id="deep-learning-on-geometry">Deep Learning on geometry</h2>
+<p>与图像不同，几何数据没有网格，需要建立新的结构。</p>
+<p>提到了几何生成模型geometric generative models，比如VAE和GAN。</p>
+<h1 id="三我们的方法">三、我们的方法</h1>
+<p>使用局部几何结构，通过组建一个局部邻接图，使用类似与卷积的操作对边进行操作，借鉴图神经网络的方法。</p>
+<p>这种叫EdgeConv的方法，有着平移不变性和非局部性。</p>
+<p>与图卷积网络不一样的是，这里的图不是固定的，而是在每层网络后动态更新。</p>
+<p>什么是图卷积神经网络？：<a href="https://zhuanlan.zhihu.com/p/71200936">何时能懂你的心——图卷积神经网络（GCN）</a></p>
+<h2 id="edge-convolution">(1) Edge Convolution</h2>
+<center>
+<img src="../imgs/formula5.png" alt="formula">
+</center>
+<p>公式1的含义是：对一个点的相邻边做一个类似与卷积的函数操作，把多条边的信息提炼成一个特征。下图为该操作的形象过程。</p>
+<center>
+<img src="../imgs/edgeconv.png" alt="edgeconv">
+</center>
+<p>edgeconv函数h的多个选择： 1. 类似于对二维图像的卷积 2. 类似于Pointnet的只关注自身 3. 结合相邻点、该点与相邻点的距离。 4. 相减 5. 对称边缘函数（在该论文中使用）</p>
+<p>方法5既捕捉了全局特征，也捕捉了局部特征。</p>
+具体公式：
+<center>
+<img src="../imgs/formula6.png" alt="formula6">
+</center>
+<h2 id="dynamic-graph-update">(2) Dynamic graph update</h2>
+<p>在每一层操作后，使用最近邻算法重新计算图（在特征空间中），因此叫该网络为Dynamic Graph CNN。</p>
+<p>此外，该网络学习如何构造每个层中使用的图G，而不是将其作为在评估网络之前构造的固定常数。在具体的实现中，计算了特征空间中的成对距离矩阵，然后对每个单点取最近的k个点。</p>
+<h2 id="properties">(3) Properties</h2>
+<p>排列不变性：由于max这种对称性运算的存在。</p>
+<p>平移不变性：部分具有平移不变性。</p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
