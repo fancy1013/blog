@@ -14,7 +14,7 @@ This repo contains my personal blog.
 
 - ```
   <center>
-  <img src="../imgs/x.jpg" alt="x" style="height: 300px;margin-left:20pt;"/>
+  <img src="../imgs/x.jpg" alt="x">
   </center>
   ```
 
