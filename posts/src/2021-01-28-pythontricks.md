@@ -1,7 +1,7 @@
-```
-titile: "Python：more than basic "
+---
+title: "Python：more than basic "
 date: Jan 28, 2021
-```
+---
 
 在看别人代码的过程中，遇到一些在一般的学习中不会遇到的技巧。
 
