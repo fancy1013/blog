@@ -1,6 +1,6 @@
 ```
 titile: "Python：more than basic "
-date: Jan 16, 2021
+date: Jan 28, 2021
 ```
 
 在看别人代码的过程中，遇到一些在一般的学习中不会遇到的技巧。
@@ -71,5 +71,19 @@ db:
 
 [点击查看更多的应用例子。](https://hydra.cc/docs/intro/)
 
+# 三、torch contiguous()
+在pytorch中，对tensor使用transpose、view等操作后得到的新tensot，与原tensor共享地址。
 
+比如：
+```python
+x = torch.randn(3,2)
+y = torch.transpose(x, 0, 1)
+x[0, 0] = 42
+print(y[0,0])
+# prints 42
+```
 
+因此，要想获得不同地址的新tensor，需要调用contiguous()。
+```python
+y = torch.transpose(x, 0, 1).contiguous()
+```
