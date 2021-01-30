@@ -1,6 +1,6 @@
 ---
 title: "PointPillars:点云目标检测"
-date: Jan 29, 2021
+date: Jan 30, 2021
 ---
 为了将这篇paper复现出来，需要对其流程以及参数都更加熟悉。
 # 一、算法流程
@@ -80,4 +80,37 @@ batch size = 2 for validation set， 4 for test submission。
 # 三、实验设置
 分为三个部分：数据集，参数设置，数据增强。
 
-## 第一部分：
+## 第一部分：数据集
+kitti数据集，既包含雷达点云也包含图像。
+
+原始的数据集是7481个training， 7518个testing。
+
+实验中，将training分为3712个trianing，3769个validation。在test submission中，784个来自validation， 在剩下的6733 samples训练。
+
+训练三个网络分别识别车，行人，骑车人。
+
+## 第二部分：设置
+xy resolution: 0.16
+
+max number of pillars(P): 12000
+
+max number of points per pillar(N):100
+
+每一个class anchor用width，length，height，z center来描述，两个朝向：0度，90度。
+
+Anchors are matched to ground truth using the 2D
+IoU with the following rules. A positive match is either the highest with a ground truth box, or above the positive match threshold, while a negative match is below the negative threshold. All other anchors are ignored in the loss.
+
+At inference time we apply axis aligned non maximum
+suppression (NMS) with an overlap threshold of 0.5 IoU.This provides similar performance compared to rotational NMS, but is much faster.
+
+### Car：
+The x, y, z range is [(0, 70.4), (-40, 40), (-3, 1)]
+meters respectively. The car anchor has width, length, and height of (1.6, 3.9, 1.5) m with a z center of -1 m. Matching uses positive and negative thresholds of 0.6 and 0.45.
+
+### Pedestrian & Cyclist：
+The x, y, z range of [(0, 48), (-20,20), (-2.5, 0.5)] meters respectively. The pedestrian anchor has width, length, and height of (0.6, 0.8, 1.73) meters with a z center of -0.6 meters, while the cyclist anchor has width, length, and height of (0.6, 1.76, 1.73) meters with a z center of -0.6 meters. Matching uses positive and negative thresholds of 0.5 and 0.35.
+
+## 第三部分：Data Augmentation
+
+明天再说。
