@@ -13,7 +13,9 @@ This repo contains my personal blog.
 - run `py sitemap_generator.py` to generate sitemap, `blog/sitemap.xml`
 
 - ```
-
+<center>
+<img src="../imgs/x.jpg" alt="x">
+</center>
   ```
 
 ## Misc
