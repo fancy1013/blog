@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-01-31T00:42:18Z" />
+  <meta name="last_modified" content="2021-01-31T17:42:18Z" />
   <meta name="published" content="Jan 30, 2021" />
   <title>PointPillars:点云目标检测</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -30,8 +30,11 @@
 <h1 class="title">PointPillars:点云目标检测</h1>
 <p class="date">Jan 30, 2021</p>
 </header>
-<p>为了将这篇paper复现出来，需要对其流程以及参数都更加熟悉。 # 一、算法流程</p>
-<p>分为三个部分：Pillar Feature Net，Backbone（2D CNN），Detection Head（SSD）。 ## 第一部分：Pillar Feature Net <strong>这一部分将点云转化为pseudo-image。</strong></p>
+<p>为了将这篇paper复现出来，需要对其流程以及参数都更加熟悉。</p>
+<h1 id="一算法流程">一、算法流程</h1>
+<p>分为三个部分：Pillar Feature Net，Backbone（2D CNN），Detection Head（SSD）。</p>
+<h2 id="第一部分pillar-feature-net">第一部分：Pillar Feature Net</h2>
+<p><strong>这一部分将点云转化为pseudo-image。</strong></p>
 <p>设点云中的一个点为l=(x,y,z,r)。</p>
 <p>第一步将点云离散化为成xy平面上的许多网格，形成一系列pillars，每个面积为B。</p>
 <p>然后将每个pillar的点数据增强，即<strong>将l=(x,y,z,r)加上(x_c,y_c,z_c,x_p,y_p)这五个维度，变为：l=(x,y,z,r,x_c,y_c,z_c,x_p,y_p),维度D=9</strong>。其中c下标表示与pillar中的所有点的距离的算术平均，p下标表示pillar的中心坐标偏移量。</p>

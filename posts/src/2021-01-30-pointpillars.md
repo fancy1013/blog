@@ -3,10 +3,13 @@ title: "PointPillars:点云目标检测"
 date: Jan 30, 2021
 ---
 为了将这篇paper复现出来，需要对其流程以及参数都更加熟悉。
+
 # 一、算法流程
 
 分为三个部分：Pillar Feature Net，Backbone（2D CNN），Detection Head（SSD）。
+
 ## 第一部分：Pillar Feature Net
+
 **这一部分将点云转化为pseudo-image。**
 
 设点云中的一个点为l=(x,y,z,r)。
@@ -25,6 +28,7 @@ date: Jan 30, 2021
 **第一部分总结**：点云离散为pillar -> 每个点数据增强 -> 对于疏密进行不同处理 -> Pointnet解码 ->生成伪图像。
 
 ## 第二部分：Backbone
+
 <center>
 <img src="../imgs/pointpillars1.jpg">
 </center>
@@ -39,6 +43,7 @@ date: Jan 30, 2021
 **第二部分总结**：几个不同步长的卷积核进行卷积 -> 上采样 -> 拼接。
 
 ## 第三部分：Detection Head
+
 使用SSD。
 
 # 二、实现细节
