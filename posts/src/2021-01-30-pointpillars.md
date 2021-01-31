@@ -94,6 +94,12 @@ kitti数据集，既包含雷达点云也包含图像。
 
 训练三个网络分别识别车，行人，骑车人。
 
+kitti数据集的label说明：
+<center>
+<img src="../imgs/kitti.png">
+</center>
+
+
 ## 第二部分：设置
 xy resolution: 0.16
 
