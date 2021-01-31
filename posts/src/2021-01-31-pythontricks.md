@@ -1,6 +1,6 @@
 ---
 title: "Python：more than basic "
-date: Jan 28, 2021
+date: Jan 31, 2021
 ---
 
 在看别人代码的过程中，遇到一些在一般的学习中不会遇到的技巧。
@@ -87,3 +87,8 @@ print(y[0,0])
 ```python
 y = torch.transpose(x, 0, 1).contiguous()
 ```
+
+# 四、numba
+
+# 五、torch.utils.data.Dataset
+经典的一篇教程：[WRITING CUSTOM DATASETS, DATALOADERS AND TRANSFORMS](https://pytorch.org/tutorials/beginner/data_loading_tutorial.html)
