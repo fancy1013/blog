@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-01-31T17:42:18Z" />
+  <meta name="last_modified" content="2021-02-01T20:16:52Z" />
   <meta name="published" content="Jan 30, 2021" />
   <title>PointPillars:点云目标检测</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -81,6 +81,10 @@
 <p>原始的数据集是7481个training， 7518个testing。</p>
 <p>实验中，将training分为3712个trianing，3769个validation。在test submission中，784个来自validation， 在剩下的6733 samples训练。</p>
 <p>训练三个网络分别识别车，行人，骑车人。</p>
+kitti数据集的label说明：
+<center>
+<img src="../imgs/kitti.png">
+</center>
 <h2 id="第二部分设置">第二部分：设置</h2>
 <p>xy resolution: 0.16</p>
 <p>max number of pillars(P): 12000</p>
@@ -93,7 +97,10 @@
 <h3 id="pedestrian-cyclist">Pedestrian &amp; Cyclist：</h3>
 <p>The x, y, z range of [(0, 48), (-20,20), (-2.5, 0.5)] meters respectively. The pedestrian anchor has width, length, and height of (0.6, 0.8, 1.73) meters with a z center of -0.6 meters, while the cyclist anchor has width, length, and height of (0.6, 1.76, 1.73) meters with a z center of -0.6 meters. Matching uses positive and negative thresholds of 0.5 and 0.35.</p>
 <h2 id="第三部分data-augmentation">第三部分：Data Augmentation</h2>
-<p>明天再说。</p>
+<p>First, following SECOND, we create a lookup table of the ground truth 3D boxes for all classes and the associated point clouds that falls inside these 3D boxes. Then for each sample, we randomly select 15, 0, 8 ground truth samples for cars, pedestrians, and cyclists respectively and place them into the current point cloud. We found these settings to perform better than the proposed settings.</p>
+<p>Next, all ground truth boxes are individually augmented.Each box is rotated (uniformly drawn from [[π/20, π/20]) and translated (x, y, and z independently drawn from N (0, 0.25)) to further enrich the training set.</p>
+<p>Finally, we perform two sets of global augmentations that are jointly applied to the point cloud and all boxes. First, we apply random mirroring flip along the x axis [30], then a global rotation and scaling [31, 28]. Finally, we apply a global translation with x, y, z drawn from N (0, 0.2) to simulate localization noise.</p>
+<p><strong>最后的这些实验具体设置就不慢慢记录了，先放这里，等框架写好再说。</strong></p>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>
 var code_blocks = document.querySelectorAll("pre.sourceCode");
