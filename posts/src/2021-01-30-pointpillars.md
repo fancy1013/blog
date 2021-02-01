@@ -124,4 +124,12 @@ The x, y, z range of [(0, 48), (-20,20), (-2.5, 0.5)] meters respectively. The p
 
 ## 第三部分：Data Augmentation
 
-明天再说。
+First, following SECOND, we create a lookup table of the ground truth 3D boxes for all classes and the associated point clouds that falls inside these 3D boxes. Then for each sample, we randomly select 15, 0, 8 ground truth samples for cars, pedestrians, and cyclists respectively and place them into the current point cloud. We found these settings to perform better than the proposed settings.
+
+
+Next, all ground truth boxes are individually augmented.Each box is rotated (uniformly drawn from [[π/20, π/20]) and translated (x, y, and z independently drawn from N (0, 0.25)) to further enrich the training set.
+
+
+Finally, we perform two sets of global augmentations that are jointly applied to the point cloud and all boxes. First, we apply random mirroring flip along the x axis [30], then a global rotation and scaling [31, 28]. Finally, we apply a global translation with x, y, z drawn from N (0, 0.2) to simulate localization noise.
+
+**最后的这些实验具体设置就不慢慢记录了，先放这里，等框架写好再说。**
