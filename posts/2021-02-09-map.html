@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-02-17T11:28:04Z" />
+  <title>mAP: How and Why</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">mAP: How and Why</h1>
+</header>
+<h1 id="map-how">mAP: How?</h1>
+<p><span class="math display">\[
+TP = True\ Positive,TN=True\ Negative \\FP=False\ Positive,FN=False\ Negative
+\]</span></p>
+<p><span class="math display">\[
+Precision = \frac{TP}{TP+FP}
+\]</span></p>
+<p><span class="math display">\[
+Recall = \frac{TP}{TP+FN}
+\]</span></p>
+<p><span class="math display">\[
+IoU = \frac{area\ of\ overlap}{area\ of\ union}
+\]</span></p>
+<p><span class="math display">\[
+AP=\int_0^1p(r)dr
+\]</span></p>
+<p>AP即average precision，是以precision为纵坐标，recall为横坐标，计算围成的面积。AR与此类似，以recall为纵坐标。</p>
+<p>mAP即mean average precision。有些时候，计算每个class的AP然后求平均得到mAP。有些时候mAP和AP是一样的。</p>
+<p>COCO中如是写道：</p>
+<blockquote>
+<p><em>AP is averaged over all categories. Traditionally, this is called “mean average precision” (mAP). We make no distinction between AP and mAP (and likewise AR and mAR) and assume the difference is clear from context.</em></p>
+</blockquote>
+<h1 id="map-why">mAP: Why?</h1>
+<p>Precision和Recall，两者不可得兼。</p>
+<p>若设置的IoU的threshold比较大，表示对识别结果要求更高，识别出来基本就是对的，因此Precision也会更高。但与此同时，Recall会降低。因为识别结果要求高了，有一些本来是对的结果，由于要求太高+识别精度不够就被漏掉了。</p>
+<p>若设置的IoU的threshold比较小，表示对识别结果要求低一点。所以，大多数物体都能被检测到，Recall也就高了。但由于要求低了，放进来很多错误的结果，Precision就低了。</p>
+<p>因此，设置一个指标来综合考量Precision和Recall，要求两者都尽可能高。</p>
+<p>这就是mAP了。</p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
