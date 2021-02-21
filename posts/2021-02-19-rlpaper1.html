@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-02-21T15:55:48Z" />
+  <meta name="published" content="Feb 19, 2021" />
+  <title>Collaborative Multi-Agent Dialogue Model Training Via Reinforcement Learning</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Collaborative Multi-Agent Dialogue Model Training Via Reinforcement Learning</h1>
+<p class="date">Feb 19, 2021</p>
+</header>
+<p>在论文<strong>Collaborative Multi-Agent Dialogue Model Training Via Reinforcement Learning</strong>中，提出了用multi-agent来训练对话模型。</p>
+<h1 id="零总体模型">零、总体模型</h1>
+<p>总体框架：2个agent（1个information seeker，1个information provider）。</p>
+<p>每个agent：Language Understanding -&gt; Dialogue Policy -&gt; Language Generation</p>
+<h1 id="一natrual-language-understanding">一、Natrual Language Understanding</h1>
+<p>sentence =&gt; intent + tag：slot</p>
+<p>多个intent，转化为多分类问题。</p>
+<p>特殊的intent：request，它的slot为新的类。</p>
+<p>数据增强方面：将intent和tag拼接作为新的tag，来给slot加上。</p>
+<p>总体的模型：一个卷积encoder，两个decoder（一个intent分类器，一个slot tagger）。</p>
+<p>评价指标：F1 measure</p>
+<h1 id="二dialogue-policy-learning">二、Dialogue Policy Learning</h1>
+<p>训两个agent，seeker和provider。</p>
+<p>seeker的state：偏好（目标），provider提供的信息。</p>
+<p>provider的state：seeker要求的信息和提供的限制</p>
+<p>reward： It assigns a positive value on successful task completion (restaurant provided matches the seeker’s goal, and all seeker’s requests are answered), a negative value otherwise, and a small negative value for each dialogue turn to favor shorter interactions. However, a seeker is penalised for each request in the goal that is not expressed, and a provider is penalised for each request that is unanswered.</p>
+<h2 id="wolf-phc">WoLF-PHC</h2>
+<p>详情见另一篇blog：Win or Learn Fast Policy Hill-Climbing(WoLF-PHC)。</p>
+<h1 id="三natural-language-generation">三、Natural Language Generation</h1>
+<p>一种常用的方法：rule-based/template based generation。缺点：可扩展性和可维持性不好，不好扩展到其他领域。</p>
+<p>比较好的方法：seq2seq。</p>
+<h2 id="seq2seq">seq2seq</h2>
+<p>本文的NLG model基于seq2seq，输入meaning representation string，生成对应的natural language template。</p>
+<p>例子：</p>
+<p><strong>Input:</strong> act inform <food> act inform <pricerange> act offer <name></p>
+<p><strong>Output:</strong> <name> is a great restaurant serving <food> food and it is in the <pricerange> price range</p>
+<h2 id="attention">attention</h2>
+<p>此外，用了attention机制和LSTM。</p>
+<h2 id="modified-bleu-score">Modified BLEU score</h2>
+<p>一个tutorial：<a href="https://machinelearningmastery.com/calculate-bleu-score-for-text-python/">bleu score</a></p>
+<p>由于一个meaning representation会对应多个template，比如：</p>
+<p><strong>MR:</strong> act inform <pricerange> act offer <name></p>
+<p><strong>T1:</strong> the price range at <name> is <pricerange></p>
+<p><strong>T2:</strong> <name> is in the <pricerange> pricerange</p>
+<p>因此，计算meaning representation的每个可能的template的bleu score，把最高的bleu score作为结果。</p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
