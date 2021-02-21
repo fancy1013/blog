@@ -1,6 +1,8 @@
-# blog
+# blog: The Last Refugee
 
-This repo contains my personal blog.
+This repo contains Yanjie Ze's personal blog.
+
+His research interest lies in computer vision, reinforcement learning and natural language processing. 
 
 ## Usage
 
