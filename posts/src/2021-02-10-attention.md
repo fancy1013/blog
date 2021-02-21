@@ -46,8 +46,3 @@ $$
 MultiHead(Q,K,V)=Concat(head_1,...,head_h)W^O\\
 where\ head_i=Attention(QW_i^Q,KW_i^K,VW_i^V)
 $$
-
-
-**Appalications of Attention in this model**:
-
-1. 在
