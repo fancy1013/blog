@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-02-21T16:54:29Z" />
+  <meta name="last_modified" content="2021-02-23T00:00:18Z" />
   <meta name="published" content="Feb 21, 2021" />
   <title>Multi-Agent Task-Oriented Dialog Policy Learning with Role-Aware Reward Decomposition</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -15,6 +15,7 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -30,7 +31,88 @@
 <h1 class="title">Multi-Agent Task-Oriented Dialog Policy Learning with Role-Aware Reward Decomposition</h1>
 <p class="date">Feb 21, 2021</p>
 </header>
-<p>在论文<strong>Multi-Agent Task-Oriented Dialog Policy Learning with Role-Aware Reward Decomposition</strong>。</p>
+<p>在论文<strong>Multi-Agent Task-Oriented Dialog Policy Learning with Role-Aware Reward Decomposition</strong>中，作者提出了Multi-Agent Dialog Policy Learning(MADPL)</p>
+<p>总的来说，三个关键点：actor-critic，Hybrid Value Network，in-depth experiment。</p>
+<h1 id="一dialog-policy">一、Dialog Policy</h1>
+<h2 id="system-policy">System Policy</h2>
+<p>system的action是dialog act set的子集。一个dialog act由domain、intent、slot type、slot value组成，四维。</p>
+<p>system在t的state由四个拼接而成：</p>
+<ol type="1">
+<li>user action at t</li>
+<li>system action at t-1</li>
+<li>the belief state</li>
+<li>embedding vectors of the number of query results from DB</li>
+</ol>
+<h2 id="user-policy">User Policy</h2>
+<p>user的action与system的action类似，但是value的值被user goal填了。</p>
+<p>user在t的state由四个拼接而成：</p>
+<ol type="1">
+<li>system action at t-1</li>
+<li>user action at t-1</li>
+<li>the goal state</li>
+<li>inconsistency vector that indicates the inconsistency between the systems response and user constraint C.</li>
+</ol>
+<p>此外，user policy会同时输出终止信号T。</p>
+<h1 id="二reward-decomposition">二、Reward Decomposition</h1>
+<p>一方面，system和user面对的情况不一样。另一方面，他们又需要共同达成目标。因此reward被分成三个部分。</p>
+<h2 id="system-reward">System Reward</h2>
+<ol type="1">
+<li>empty dialog act penalty aSt = ∅</li>
+<li>late answer penalty if there is a request slot triggered but the system agent does not reply the information immediately</li>
+<li>task success reward based on the user agent’s description</li>
+</ol>
+<h2 id="user-reward">User Reward</h2>
+<ol type="1">
+<li>empty dialog act penalty aUt = ∅</li>
+<li>early inform penalty if the user agent requests for information when there is still a constraint slot remained to inform</li>
+<li>user goal reward whether the user agents have expressed all the constraints C and requests R</li>
+</ol>
+<h2 id="global-reward">Global Reward</h2>
+<ol type="1">
+<li>efficiency penalty that a small negative value will be given at each dialog turn</li>
+<li>sub-goal completion reward once the subtask of G in a particular domain is accomplished</li>
+<li>task success reward based on user goal G</li>
+</ol>
+<h1 id="三hybrid-value-network">三、Hybrid Value Network</h1>
+<p><span class="math display">\[
+h_s^S = tanh(f_s^S(s^S))
+\]</span></p>
+<p><span class="math display">\[
+h_s^U = tanh(f_s^U(s^U))
+\]</span></p>
+<p><span class="math display">\[
+V^S(s^S) = f_S(h_s^S)
+\]</span></p>
+<p><span class="math display">\[
+V^U(s^U)=f_U(h_s^U)
+\]</span></p>
+<p><span class="math display">\[
+V^G(s)=f_G([h_s^S;h_s^U])
+\]</span></p>
+<h1 id="四optimization">四、Optimization</h1>
+<p>因为action space太大了，训练过程分为两步：首先用conversational corpus预训练，然后用RL提升预训练模型。</p>
+<h2 id="pretrain">Pretrain</h2>
+<p>用beta-weighted logistic regression进行pretrain： <span class="math display">\[
+L(X,Y;\beta)=-[\beta \cdot Y^Tlog\sigma(X)+(I-Y)^Tlog(I-\sigma(X))]
+\]</span></p>
+<h2 id="critic-optimization">Critic Optimization</h2>
+<p>因为传统的critic优化很不稳定，因为使用下面这些loss functions： <span class="math display">\[
+L^S_V(\theta)=(r^S+\gamma V_{\theta^-}^S(S^{&#39;S})-V_\theta^S(s^S))^2
+\]</span></p>
+<p><span class="math display">\[
+L^U_V(\theta)=(r^U+\gamma V_{\theta^-}^U(S^{&#39;U})-V_\theta^U(s^U))^2
+\]</span></p>
+<p><span class="math display">\[
+L^G_V(\theta)=(r^G+\gamma V_{\theta^-}^G(S^{&#39;G})-V_\theta^G(s^G))^2
+\]</span></p>
+<p><span class="math display">\[
+L_V = L_V^S+L_V^U+L_V^G
+\]</span></p>
+<p>其中，<span class="math inline">\(\theta^-\)</span>是target network的参数。</p>
+<h1 id="五总体算法流程">五、总体算法流程</h1>
+<center>
+<img src="../imgs/rlpaper2alg.png">
+</center>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>
 var code_blocks = document.querySelectorAll("pre.sourceCode");
