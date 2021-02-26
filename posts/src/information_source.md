@@ -1,6 +1,6 @@
 # A Breif Summary of Information Source
 
-2020.2.26  Yanjie Ze
+2021.2.26  Yanjie Ze
 
 > An explanation is a piece of information displayed to users, explaining why a particular item is recommended.
 
