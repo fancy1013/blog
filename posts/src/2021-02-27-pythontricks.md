@@ -1,9 +1,19 @@
 ---
 title: "Python：more than basic "
-date: Jan 31, 2021
+date: Feb 27, 2021
 ---
 
 在看别人代码的过程中，遇到一些在一般的学习中不会遇到的技巧。
+
+```
+目录
+一、TODO comments
+二、Hydra
+三、torch contiguous()
+四、*args & **args
+```
+
+
 
 # 一、TODO comments
 
@@ -88,7 +98,37 @@ print(y[0,0])
 y = torch.transpose(x, 0, 1).contiguous()
 ```
 
-# 四、numba
+# 四、*args & **args
 
-# 五、torch.utils.data.Dataset
-经典的一篇教程：[WRITING CUSTOM DATASETS, DATALOADERS AND TRANSFORMS](https://pytorch.org/tutorials/beginner/data_loading_tutorial.html)
+python中的星号的本质：**unpacking**
+
+一个星号表示对list进行unpack，即：
+
+```python
+> list1 = [1,2,3]
+> print(list1)
+Output: [1,2,3]
+> print(*list1)
+Output: 1,2,3
+```
+
+两个星号表示对dictionary进行unpack，即：
+
+```python
+my_first_dict = {"A": 1, "B": 2}
+my_second_dict = {"C": 3, "D": 4}
+my_merged_dict = {**my_first_dict, **my_second_dict}
+
+print(my_merged_dict)
+# Output: {'A': 1, 'B': 2, 'C': 3, 'D': 4}
+```
+
+知道了星号的作用，就知道为什么在function的参数里，有时候会用如下形式：
+
+```python
+def f(x, *args, **kwargs):
+  pass
+```
+
+注意，参数是有顺序的，一定是**普通参数、单星号、双星号**。
+

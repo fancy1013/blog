@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-02-27T09:32:19Z" />
+  <meta name="published" content="Feb 27, 2021" />
+  <title>Python：more than basic</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Python：more than basic</h1>
+<p class="date">Feb 27, 2021</p>
+</header>
+<p>在看别人代码的过程中，遇到一些在一般的学习中不会遇到的技巧。</p>
+<pre><code>目录
+一、TODO comments
+二、Hydra
+三、torch contiguous()
+四、*args &amp; **args</code></pre>
+<h1 id="一todo-comments">一、TODO comments</h1>
+<p>众所周知，python的注释语句用<code>#</code>或```。</p>
+<p>在<strong>编辑器中输入注释，注释部分的一些特殊的语句会被高亮</strong>，比如<code>TODO</code>，用来表明要做的事情或者未完成的事情。</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">&quot;something&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: finish the structure</span></span></code></pre></div>
+<p>在Pycharm中，可以直接对带<code>TODO</code>的注释统计，以此更方便进行代码完善。</p>
+<p>这是<a href="https://www.jetbrains.com/help/pycharm/using-todo.html?gclid=CjwKCAiAl4WABhAJEiwATUnEF6UvndUf6vAqR4GbKnus-p7iyJ4caDVgiheeFG0Vr17sujKAkUIahxoCE-IQAvD_BwE">Pycharm官方说明。</a></p>
+<p>还有一个类似的：<code>FIXME</code>，可以用来表明有bug需要修复。</p>
+<p>细节虽小，意义重要。</p>
+<h1 id="二hydra">二、Hydra</h1>
+<p>Hydra是一个开源Python框架，用于简化研究开发与一些复杂应用。</p>
+<p><strong>应用一，自动加载yaml文件。</strong></p>
+<p>示例代码：</p>
+<p>config.yaml:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">db</span><span class="kw">:</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">driver</span><span class="kw">:</span><span class="at"> mysql</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">user</span><span class="kw">:</span><span class="at"> omry</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">pass</span><span class="kw">:</span><span class="at"> secret</span></span></code></pre></div>
+<p>my_app.py</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hydra</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> omegaconf <span class="im">import</span> DictConfig, OmegaConf</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">@hydra.main</span>(config_name<span class="op">=</span><span class="st">&quot;config&quot;</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> my_app(cfg : DictConfig) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(OmegaConf.to_yaml(cfg))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">&quot;__main__&quot;</span>:</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    my_app()</span></code></pre></div>
+<p>然后，config.yaml可以自动加载。</p>
+<pre><code>$ python my_app.py
+db:
+  driver: mysql
+  pass: secret
+  user: omry</code></pre>
+<p><a href="https://hydra.cc/docs/intro/">点击查看更多的应用例子。</a></p>
+<h1 id="三torch-contiguous">三、torch contiguous()</h1>
+<p>在pytorch中，对tensor使用transpose、view等操作后得到的新tensot，与原tensor共享地址。</p>
+<p>比如：</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">3</span>,<span class="dv">2</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> torch.transpose(x, <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>x[<span class="dv">0</span>, <span class="dv">0</span>] <span class="op">=</span> <span class="dv">42</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(y[<span class="dv">0</span>,<span class="dv">0</span>])</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># prints 42</span></span></code></pre></div>
+<p>因此，要想获得不同地址的新tensor，需要调用contiguous()。</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> torch.transpose(x, <span class="dv">0</span>, <span class="dv">1</span>).contiguous()</span></code></pre></div>
+<h1 id="四args-args">四、*args &amp; **args</h1>
+<p>python中的星号的本质：<strong>unpacking</strong></p>
+<p>一个星号表示对list进行unpack，即：</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> list1 <span class="op">=</span> [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>]</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="bu">print</span>(list1)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>Output: [<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> <span class="bu">print</span>(<span class="op">*</span>list1)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>Output: <span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span></span></code></pre></div>
+<p>两个星号表示对dictionary进行unpack，即：</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>my_first_dict <span class="op">=</span> {<span class="st">&quot;A&quot;</span>: <span class="dv">1</span>, <span class="st">&quot;B&quot;</span>: <span class="dv">2</span>}</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>my_second_dict <span class="op">=</span> {<span class="st">&quot;C&quot;</span>: <span class="dv">3</span>, <span class="st">&quot;D&quot;</span>: <span class="dv">4</span>}</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>my_merged_dict <span class="op">=</span> {<span class="op">**</span>my_first_dict, <span class="op">**</span>my_second_dict}</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(my_merged_dict)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Output: {&#39;A&#39;: 1, &#39;B&#39;: 2, &#39;C&#39;: 3, &#39;D&#39;: 4}</span></span></code></pre></div>
+<p>知道了星号的作用，就知道为什么在function的参数里，有时候会用如下形式：</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> f(x, <span class="op">*</span>args, <span class="op">**</span>kwargs):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">pass</span></span></code></pre></div>
+<p>注意，参数是有顺序的，一定是<strong>普通参数、单星号、双星号</strong>。</p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
