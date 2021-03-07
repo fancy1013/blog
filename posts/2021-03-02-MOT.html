@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-03-07T14:49:26Z" />
+  <meta name="published" content="Mar 2, 2021" />
+  <title>Multi Object Tracking for 3D Small Objects</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Multi Object Tracking for 3D Small Objects</h1>
+<p class="date">Mar 2, 2021</p>
+</header>
+<p>paper: Detection and Tracking of Small Objects in Sparse 3D Laser Range Data</p>
+算法流程：
+<center>
+<img src="../imgs/MOT.png">
+</center>
+<h1 id="point-cloud-generation">Point Cloud Generation</h1>
+<p>16个laser-detector pairs</p>
+<h1 id="segmentation">Segmentation</h1>
+<p>goal: find all points belonging to foreground groups of a specified width range</p>
+<p>方法：根据物体的width来分割。 two median filters for segmentation: one for noise(smaller kernel), one for background(bigger kernel) (问题：具体是啥意思？没读懂)</p>
+<p>处理points with invalid distance readings: 自动作为背景点。 (问题：这是啥？)</p>
+<h1 id="detection">Detection</h1>
+<p><strong>先对segment出来的points进行clustering，再filtering。</strong></p>
+<p>clustering部分用 region growing clustering算法。如下。</p>
+<center>
+<img src="../imgs/rgc.png">
+</center>
+<p>问题：下面说的聚类算法的drawback是啥？</p>
+<pre><code>One drawback of the organized grid for this clustering method is a potential overlap of the start and end of a circular
+scan. We need to handle this case explicitly by computing the approximate overlap, finding the clusters lying within and fusing those corresponding to the same objects in the world.</code></pre>
+<p>问题：这是什么意思？</p>
+<pre><code>Due to the sensor’s limited vertical FoV, objects might be scanned partially. Consequently, we refrain from testing for a minimal height for clusters containing at least one point from the top and bottom scan rings.</code></pre>
+<h1 id="multi-object-tracking">Multi Object Tracking</h1>
+<p>维持一个object hypothesis的集合，每次用新的detection进行更新。</p>
+<p>每个hypothesis用一个Kalman filter。</p>
+<p>核心问题：如何将每个hypothesis与detection结果对应？</p>
+<p>将问题转化为hypothesis和detection的邻接矩阵，计算<a href="https://en.wikipedia.org/wiki/Bhattacharyya_distance">Bhattacharyya distance</a>。</p>
+<p>核心问题：如何处理新出现的检测与离开视野的检测？</p>
+<p>计算Kalman filter的特征值。与阈值进行比较。</p>
+<p>此外，每个object有两个状态，static或dynamic。</p>
+<h1 id="evaluation-metrics">Evaluation Metrics</h1>
+<p>metric 1:</p>
+<p><span class="math display">\[
+MOTP = \frac{\sum_t d_t}{\sum_t c_t}
+\]</span></p>
+<p><span class="math display">\[
+MOTA = 1 - \frac{\sum_t(m_t+fp_t+mme_t)}{\sum_t g_t}
+\]</span></p>
+<p>metric 2: <span class="math display">\[
+MT,PT,ML
+\]</span></p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
