@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-03-10T17:12:34Z" />
+  <meta name="published" content="Mar 10, 2021" />
+  <title>PointGroup, for 3D instance segmentation</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">PointGroup, for 3D instance segmentation</h1>
+<p class="date">Mar 10, 2021</p>
+</header>
+<p>论文：PointGroup: Dual-Set Point Grouping for 3D Instance Segmentation</p>
+<p>instance segmentation总的来说有两种思路，一种是detection的思路，自顶向下，直接检测物体；一种是segmentation的思路，自底向上，先做语义分割，再做物体的分割。</p>
+<h1 id="一overview">一、Overview</h1>
+<center>
+<img src="../imgs/pointgroup.png">
+</center>
+<p>三个部分：backbone，clustering，scorenet。</p>
+<h1 id="二backbone">二、Backbone</h1>
+<p>输入n个points，每个包含坐标与颜色。</p>
+<p>用U-net作为Backbone，对每个点提取pointwise的F个特征，接着分为两个branch去处理。</p>
+<p>Semantic Segmentation Branch提取label，Offset Prediction Branch提取offset vector。更多的细节在论文与代码中。</p>
+下图为Scannet中offset vector的大小，可以发现大多数点相对于质心的距离是比较小的。
+<center>
+<img src="../imgs/centroiddistance.png">
+</center>
+<h1 id="三clustering">三、Clustering</h1>
+Clustering算法如下。
+<center>
+<img src="../imgs/clustering.png">
+</center>
+<p>这个算法和那篇Multi object tracking里的clustering算法很像。</p>
+<p>这篇文章的一个创新点就是把这个Clustering算法用在“dual point”，即同时对semantic label和offset vector使用，从两个方面去train，因为前者容易misgroup，后者对物体边缘的点效果不好。</p>
+文章后面提到做了ablation study，对dual point对有效性做了一个证明，结果表格如下。
+<center>
+<img src="../imgs/dualpoint.png">
+</center>
+<h1 id="四scorenet">四、ScoreNet</h1>
+<p>输入：m个cluster</p>
+<p>输出：对每个cluster的打分</p>
+下图为ScoreNet的结构。
+<center>
+<img src="../imgs/scorenet.png">
+</center>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
