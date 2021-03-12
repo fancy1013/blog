@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-03-12T08:00:38Z" />
+  <meta name="published" content="Mar 11, 2021" />
+  <title>Show and Tell: Image Caption</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Show and Tell: Image Caption</h1>
+<p class="date">Mar 11, 2021</p>
+</header>
+<p>论文：Show and Tell: A Neural Image Caption Generator</p>
+<p>这篇文章的idea来源于nlp的机器翻译。机器翻译中的encoder-decoder结构是由两个RNN构成的，这篇文章把encoder的RNN换成了CNN。</p>
+<p>这个想法感觉很简单啊，看来这篇CVPR2015是开山之作？</p>
+<h1 id="一优化函数">一、优化函数</h1>
+<p><span class="math display">\[
+\theta^*=\argmax_\theta\sum_{(I,S)}logp(S|I;\theta)
+\]</span> 其中theta是模型参数，I是输入图像，S是正确的描述。</p>
+<p><span class="math display">\[
+logp(S|I)=\sum_{t=0}^NlogP(S_t|I,S_0,...,S_{t-1})
+\]</span> 使用联合分布计算概率，其中N是句子的长度。</p>
+<p>从上面这个需要优化的公式来看，用RNN是很自然的，可以用hidden state来表示前t-1个单词，即： <span class="math display">\[
+h_{t+1}=f(h_t,x_t)
+\]</span> 其中，f是LSTM。</p>
+<h1 id="二lstm">二、LSTM</h1>
+LSTM结构如下图。
+<center>
+<img src="../imgs/lstm.png">
+</center>
+<p>LSTM由输入门i，输出门o，遗忘门f构成。 比如输入门： <span class="math display">\[
+i_t =\sigma (W_{ix}x_t+W_{im}m_{t-1})
+\]</span> 遗忘门和输出门类似。<span class="math inline">\(\sigma(\cdot)\)</span>是sigmoid函数。</p>
+<p><span class="math display">\[
+c_t = f_t\odot c_{t-1}+i_t\odot h(W_{cx}x_t+W_{cm}m_{t-1})
+\]</span> <span class="math display">\[
+m_t = o_t\odot c_t
+\]</span> <span class="math display">\[
+p_{t+1}= Softmax(m_t)
+\]</span> c为cell，m为memory，p为预测的概率。</p>
+然后是总体的流程： <span class="math display">\[
+x_{-1}=CNN(I)
+\]</span> <span class="math display">\[
+x_t=W_eS_t, t\in {0,...,N-1}
+\]</span> <span class="math display">\[
+p_{t+1}=LSTM(x_t)
+\]</span>
+<center>
+<img src="../imgs/lstm2.png">
+</center>
+<p>每个word是一个one-hot vector， 维度和dictionary的大小一样。</p>
+<p>注意：图片只在开始的时候输入了一次。如果每个state都输入一下反而效果不好。</p>
+<p>Loss: <span class="math display">\[
+L(I,S)=-\sum_{t=1}^Nlogp_t(S_t)
+\]</span></p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
