@@ -17,4 +17,14 @@ idea是：人类在判断小物体的时候有时候是根据它所在的群体�
 1. semantic module
 2. spatial layout module
 3. context reasoning module
-   
+
+下图展示了SR网络和本文的网络的结构。
+<center>
+<img src="../imgs/reasoning.png">
+</center>
+
+# 二、具体结构
+
+<center>
+<img src="../imgs/reasoning2.png">
+</center>
