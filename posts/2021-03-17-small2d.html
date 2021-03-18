@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-03-17T22:44:38Z" />
+  <meta name="last_modified" content="2021-03-18T21:53:26Z" />
   <meta name="published" content="Mar 17, 2021" />
   <title>Method Collection for 2D Small Object Detection</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -43,12 +43,22 @@
 <center>
 <img src="../imgs/reasoning.png">
 </center>
-<h2 id="具体结构">（2）具体结构</h2>
+<h2 id="结构">（2）结构</h2>
 <center>
 <img src="../imgs/reasoning2.png">
 </center>
 <h1 id="二高分辨率">二、高分辨率</h1>
-<h2 id="section">（1）</h2>
+<p>论文：HRDNet: High-resolution Detection Network for Small Objects ## （1）idea High-resolution Detection Network (HRDNet)由两个部分组成：Multi-Depth Image Pyramid Network (MD-IPN) 和 Multi-Scale Feature Pyramid Network (MS-FPN).</p>
+<p>HRDNet的主要思想是使用深backbone处理低分辨率图像，同时使用浅backbone处理高分辨率图像。对于小目标进行深度的特征提取。</p>
+<h2 id="结构-1">（2）结构</h2>
+总的结构：
+<center>
+<img src="../imgs/highresolution.png">
+</center>
+MS-FPN的具体结构：
+<center>
+<img src="../imgs/msfpn.png">
+</center>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>
 var code_blocks = document.querySelectorAll("pre.sourceCode");
