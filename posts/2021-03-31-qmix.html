@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-03-31T22:58:18Z" />
+  <meta name="last_modified" content="2021-04-05T10:07:38Z" />
   <meta name="published" content="Mar 31, 2021" />
   <title>QMIX</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -59,8 +59,28 @@ O(s,a): S\times A \rightarrow Z
 Q^\pi (s_t, \mathbf{u}_t) = \mathbb{E}_{s_{t+1}:\infty, \mathbb{u_{t+1}}:\infty}[R_t|s_t,\mathbb{u_t}]
 \]</span></p>
 <p>注意：centralized training， decentralized execution。</p>
-<h1 id="三qmix">三、QMIX</h1>
-<p>忙完再看！！</p>
+<h1 id="三value-decomposition-network">三、Value Decomposition Network</h1>
+<p>直接用每个agent的Q的和作为总体的Q。 <span class="math display">\[
+Q_{tot}(\mathbf{\tau,u})=\sum_{i=1}^n Q_i(\tau^i,u^i;\theta^i)
+\]</span></p>
+<h1 id="四qmix">四、QMIX</h1>
+<h2 id="公式">（1）公式</h2>
+<blockquote>
+<p>Key to our method is the insight that the full factorisation of VDN is not necessary in order to be able to extract decentralised policies that are fully consistent with their centralised counterpart. Instead, for consistency we only need to ensure that a global argmax performed on Qtot yields the same result as a set of individual argmax operations performed on each Qa: <span class="math display">\[
+\argmax_u Q_{tot}(\mathbf{\tau,u})=\begin{pmatrix} argmax_{u^1}Q_1(\tau^1,u^1)\\.\\.\\.\\argmax_{u^n}(\tau^n,u^n)\end{pmatrix}
+\]</span> 此外，还要保证： <span class="math display">\[
+\frac{\partial Q_{tot}}{\partial Q_a}\geq 0, \forall a
+\]</span></p>
+</blockquote>
+<h2 id="模型">（2）模型</h2>
+总的框架：
+<center>
+<img src="../imgs/qmix.png">
+</center>
+<p>对于每个agent，用一个DRQN来表示值函数，如上图（c）所示。</p>
+<p>mixing network的权重由hypernetwork生成，利用了全局状态s（而不是观察状态），如上图（a）所示。</p>
+<h1 id="awesome-links">Awesome Links☆</h1>
+<p><a href="https://zhuanlan.zhihu.com/p/203164554">伏羲讲堂多智能体强化学习中的值函数分解——VDN、QMIX、QTRAN</a> 这篇文章讲的太好了，倾情推荐。</p>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>
 var code_blocks = document.querySelectorAll("pre.sourceCode");
