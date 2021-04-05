@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-04-05T10:07:38Z" />
+  <meta name="last_modified" content="2021-04-05T19:35:43Z" />
   <meta name="published" content="Mar 31, 2021" />
   <title>QMIX</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -79,8 +79,30 @@ Q_{tot}(\mathbf{\tau,u})=\sum_{i=1}^n Q_i(\tau^i,u^i;\theta^i)
 </center>
 <p>对于每个agent，用一个DRQN来表示值函数，如上图（c）所示。</p>
 <p>mixing network的权重由hypernetwork生成，利用了全局状态s（而不是观察状态），如上图（a）所示。</p>
+损失函数：
+<center>
+<img src="../imgs/qmix_loss.png">
+</center>
+<h2 id="representational-complexity">(3)Representational Complexity</h2>
+<p>对于那些action依赖于在同一轮中的其他agent的值函数，QMIX可能不能正确地进行值分解。但是QMIX至少比VDN做得好。</p>
+<h1 id="五two-step-game">五、Two-Step Game</h1>
+<center>
+<img src="../imgs/two_step_game.png">
+</center>
+<p>设计了一个简单的game来测试QMIX和VDN的效果。</p>
+<p>在第一步，agent1选一个矩阵，agent2不动。</p>
+<p>在第二步，agent1和agent2各自take action，获得global reward。</p>
+<p>结果展示在下表中。可以看出，QMIX成功学习到了最优的策略：reward为8的情况。</p>
+<center>
+<img src="../imgs/qmix_table2.png">
+</center>
+<h1 id="六ablations">六、Ablations</h1>
+<p>做ablation主要是为了调查： 1. 额外状态信息的影响 2. 非线性mixing network的必要性</p>
 <h1 id="awesome-links">Awesome Links☆</h1>
-<p><a href="https://zhuanlan.zhihu.com/p/203164554">伏羲讲堂多智能体强化学习中的值函数分解——VDN、QMIX、QTRAN</a> 这篇文章讲的太好了，倾情推荐。</p>
+<ul>
+<li><p><a href="https://zhuanlan.zhihu.com/p/203164554">伏羲讲堂多智能体强化学习中的值函数分解——VDN、QMIX、QTRAN</a> 这篇文章讲的很好，倾情推荐。</p></li>
+<li><p>这篇文章教你<a href="https://soygema.github.io/starcraftII_machine_learning/#0">如何搭建starcraft2环境</a></p></li>
+</ul>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>
 var code_blocks = document.querySelectorAll("pre.sourceCode");
