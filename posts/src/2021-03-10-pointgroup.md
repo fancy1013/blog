@@ -47,3 +47,15 @@ Clustering算法如下。
 <center>
 <img src="../imgs/scorenet.png">
 </center>
+
+# 五、train and inference
+
+<center>
+<img src="../imgs/pointgroup7.png">
+</center>
+
+<center>
+<img src="../imgs/pointgroup_train.png">
+</center>
+
+# 六

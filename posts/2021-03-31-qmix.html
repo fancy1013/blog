@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-04-05T19:35:43Z" />
+  <meta name="last_modified" content="2021-04-09T12:26:51Z" />
   <meta name="published" content="Mar 31, 2021" />
   <title>QMIX</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -33,7 +33,7 @@
 </header>
 <p>Paper：QMIX: Monotonic Value Function Factorisation for Deep Multi-Agent Reinforcement Learning, ICML 2018.</p>
 <h1 id="一idea">一、idea</h1>
-<p>在<strong>IQL（Independent Q Learning）</strong>和<strong>COMA（Counterfactual Multi-agent）</strong>之间寻找平衡，在<strong>VDN（Value Decomposition Network）</strong>上做出升级。</p>
+<p>在 <strong>IQL（Independent Q Learning）</strong> 和 <strong>COMA（Counterfactual Multi-agent)</strong> 之间寻找平衡，在 <strong>VDN（Value Decomposition Network）</strong> 上做出升级。</p>
 <p>在全局Q和单体Q上加上一个非常重要的约束，保证Q_total的有效： <span class="math display">\[
 \frac{\partial Q_{tot}}{\partial Q_a}\geq 0, \forall a
 \]</span> 此外，每个Q_a用一个network，mix起来的时候也用一个network。</p>
@@ -66,12 +66,13 @@ Q_{tot}(\mathbf{\tau,u})=\sum_{i=1}^n Q_i(\tau^i,u^i;\theta^i)
 <h1 id="四qmix">四、QMIX</h1>
 <h2 id="公式">（1）公式</h2>
 <blockquote>
-<p>Key to our method is the insight that the full factorisation of VDN is not necessary in order to be able to extract decentralised policies that are fully consistent with their centralised counterpart. Instead, for consistency we only need to ensure that a global argmax performed on Qtot yields the same result as a set of individual argmax operations performed on each Qa: <span class="math display">\[
+<p>Key to our method is the insight that the full factorisation of VDN is not necessary in order to be able to extract decentralised policies that are fully consistent with their centralised counterpart. Instead, for consistency we only need to ensure that a global argmax performed on Qtot yields the same result as a set of individual argmax operations performed on each Qa:</p>
+</blockquote>
+<p><span class="math display">\[
 \argmax_u Q_{tot}(\mathbf{\tau,u})=\begin{pmatrix} argmax_{u^1}Q_1(\tau^1,u^1)\\.\\.\\.\\argmax_{u^n}(\tau^n,u^n)\end{pmatrix}
 \]</span> 此外，还要保证： <span class="math display">\[
 \frac{\partial Q_{tot}}{\partial Q_a}\geq 0, \forall a
 \]</span></p>
-</blockquote>
 <h2 id="模型">（2）模型</h2>
 总的框架：
 <center>
