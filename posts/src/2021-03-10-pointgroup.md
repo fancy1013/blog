@@ -58,4 +58,7 @@ Clustering算法如下。
 <img src="../imgs/pointgroup_train.png">
 </center>
 
-# 六
+# 六、Evaluation Metrics
+<center>
+<img src="../imgs/pointgroup_table.png">
+</center>
