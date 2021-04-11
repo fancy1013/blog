@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-04-11T10:01:49Z" />
+  <meta name="published" content="Apr 11, 2021" />
+  <title>NMS</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">NMS</h1>
+<p class="date">Apr 11, 2021</p>
+</header>
+<p>NMS，Non Maximal Suppression，非极大值抑制。</p>
+<h1 id="一一维nms算法流程">一、一维NMS算法流程</h1>
+<center>
+<img src="../imgs/nms1d.png">
+</center>
+<h1 id="二二维nms算法流程">二、二维NMS算法流程</h1>
+<ol type="1">
+<li>将所有的框按类别划分，并剔除背景类，因为无需NMS。</li>
+<li>对每个物体类中的边界框(B_BOX)，按照分类置信度降序排列。</li>
+<li>在某一类中，选择置信度最高的边界框B_BOX1，将B_BOX1从输入列表中去除，并加入输出列表。</li>
+<li>逐个计算B_BOX1与其余B_BOX2的交并比IoU，若IoU(B_BOX1,B_BOX2) &gt; 阈值TH，则在输入去除B_BOX2。</li>
+<li>重复步骤3~4，直到输入列表为空，完成一个物体类的遍历。</li>
+<li>重复2~5，直到所有物体类的NMS处理完成。</li>
+<li>输出列表，算法结束</li>
+</ol>
+<h1 id="三计算iou的代码实现python">三、计算IOU的代码实现（Python）</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_iou(box1, box2, wh<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">        compute the iou of two boxes.</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">        Args:</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">                box1, box2: [xmin, ymin, xmax, ymax] (wh=False) or [xcenter, ycenter, w, h] (wh=True)</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">                wh: the format of coordinate.</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">        Return:</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co">                iou: iou of box1 and box2.</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">        &quot;&quot;&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> wh <span class="op">==</span> <span class="va">False</span>:</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                xmin1, ymin1, xmax1, ymax1 <span class="op">=</span> box1</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                xmin2, ymin2, xmax2, ymax2 <span class="op">=</span> box2</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                xmin1, ymin1 <span class="op">=</span> <span class="bu">int</span>(box1[<span class="dv">0</span>]<span class="op">-</span>box1[<span class="dv">2</span>]<span class="op">/</span><span class="fl">2.0</span>), <span class="bu">int</span>(box1[<span class="dv">1</span>]<span class="op">-</span>box1[<span class="dv">3</span>]<span class="op">/</span><span class="fl">2.0</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                xmax1, ymax1 <span class="op">=</span> <span class="bu">int</span>(box1[<span class="dv">0</span>]<span class="op">+</span>box1[<span class="dv">2</span>]<span class="op">/</span><span class="fl">2.0</span>), <span class="bu">int</span>(box1[<span class="dv">1</span>]<span class="op">+</span>box1[<span class="dv">3</span>]<span class="op">/</span><span class="fl">2.0</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                xmin2, ymin2 <span class="op">=</span> <span class="bu">int</span>(box2[<span class="dv">0</span>]<span class="op">-</span>box2[<span class="dv">2</span>]<span class="op">/</span><span class="fl">2.0</span>), <span class="bu">int</span>(box2[<span class="dv">1</span>]<span class="op">-</span>box2[<span class="dv">3</span>]<span class="op">/</span><span class="fl">2.0</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                xmax2, ymax2 <span class="op">=</span> <span class="bu">int</span>(box2[<span class="dv">0</span>]<span class="op">+</span>box2[<span class="dv">2</span>]<span class="op">/</span><span class="fl">2.0</span>), <span class="bu">int</span>(box2[<span class="dv">1</span>]<span class="op">+</span>box2[<span class="dv">3</span>]<span class="op">/</span><span class="fl">2.0</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="co">## 获取矩形框交集对应的左上角和右下角的坐标（intersection）</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        xx1 <span class="op">=</span> np.<span class="bu">max</span>([xmin1, xmin2])</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        yy1 <span class="op">=</span> np.<span class="bu">max</span>([ymin1, ymin2])</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        xx2 <span class="op">=</span> np.<span class="bu">min</span>([xmax1, xmax2])</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        yy2 <span class="op">=</span> np.<span class="bu">min</span>([ymax1, ymax2])</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        <span class="co">## 计算两个矩形框面积</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        area1 <span class="op">=</span> (xmax1<span class="op">-</span>xmin1) <span class="op">*</span> (ymax1<span class="op">-</span>ymin1) </span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        area2 <span class="op">=</span> (xmax2<span class="op">-</span>xmin2) <span class="op">*</span> (ymax2<span class="op">-</span>ymin2)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        inter_area <span class="op">=</span> (np.<span class="bu">max</span>([<span class="dv">0</span>, xx2<span class="op">-</span>xx1])) <span class="op">*</span> (np.<span class="bu">max</span>([<span class="dv">0</span>, yy2<span class="op">-</span>yy1]))<span class="co">#计算交集面积</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        iou <span class="op">=</span> inter_area <span class="op">/</span> (area1<span class="op">+</span>area2<span class="op">-</span>inter_area<span class="op">+</span><span class="fl">1e-6</span>)＃计算交并比</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> iou </span></code></pre></div>
+<h1 id="四nms的代码实现python">四、NMS的代码实现（Python）</h1>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> py_cpu_nms(dets, thresh): </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">&quot;&quot;&quot;Pure Python NMS baseline.&quot;&quot;&quot;</span> </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">#dets某个类的框，x1、y1、x2、y2、以及置信度score</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">#eg:dets为[[x1,y1,x2,y2,score],[x1,y1,y2,score]……]]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># thresh是IoU的阈值     </span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    x1 <span class="op">=</span> dets[:, <span class="dv">0</span>] </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    y1 <span class="op">=</span> dets[:, <span class="dv">1</span>]</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    x2 <span class="op">=</span> dets[:, <span class="dv">2</span>] </span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    y2 <span class="op">=</span> dets[:, <span class="dv">3</span>] </span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    scores <span class="op">=</span> dets[:, <span class="dv">4</span>] </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#每一个检测框的面积 </span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    areas <span class="op">=</span> (x2 <span class="op">-</span> x1 <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> (y2 <span class="op">-</span> y1 <span class="op">+</span> <span class="dv">1</span>) </span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#按照score置信度降序排序 </span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    order <span class="op">=</span> scores.argsort()[::<span class="op">-</span><span class="dv">1</span>] </span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    keep <span class="op">=</span> [] <span class="co">#保留的结果框集合 </span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> order.size <span class="op">&gt;</span> <span class="dv">0</span>: </span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>        i <span class="op">=</span> order[<span class="dv">0</span>] </span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        keep.append(i) <span class="co">#保留该类剩余box中得分最高的一个 </span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">#得到相交区域,左上及右下 </span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        xx1 <span class="op">=</span> np.maximum(x1[i], x1[order[<span class="dv">1</span>:]]) </span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>        yy1 <span class="op">=</span> np.maximum(y1[i], y1[order[<span class="dv">1</span>:]]) </span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        xx2 <span class="op">=</span> np.minimum(x2[i], x2[order[<span class="dv">1</span>:]]) </span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>        yy2 <span class="op">=</span> np.minimum(y2[i], y2[order[<span class="dv">1</span>:]]) </span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        <span class="co">#计算相交的面积,不重叠时面积为0 </span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        w <span class="op">=</span> np.maximum(<span class="fl">0.0</span>, xx2 <span class="op">-</span> xx1 <span class="op">+</span> <span class="dv">1</span>) </span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>       h <span class="op">=</span> np.maximum(<span class="fl">0.0</span>, yy2 <span class="op">-</span> yy1 <span class="op">+</span> <span class="dv">1</span>) </span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>       inter <span class="op">=</span> w <span class="op">*</span> h </span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>        <span class="co">#计算IoU：重叠面积 /（面积1+面积2-重叠面积） </span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>        ovr <span class="op">=</span> inter <span class="op">/</span> (areas[i] <span class="op">+</span> areas[order[<span class="dv">1</span>:]] <span class="op">-</span> inter) </span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>       <span class="co">#保留IoU小于阈值的box </span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>        inds <span class="op">=</span> np.where(ovr <span class="op">&lt;=</span> thresh)[<span class="dv">0</span>] </span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>        order <span class="op">=</span> order[inds <span class="op">+</span> <span class="dv">1</span>] <span class="co">#因为ovr数组的长度比order数组少一个,所以这里要将所有下标后移一位 </span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> keep</span></code></pre></div>
+<p>注意点： - order = scores.argsort()[::-1]。argsort返回的是从小到大的索引，用[::-1]变为从大到小的索引。 - inds = np.where(ovr &lt;= thresh)[0]。np.where返回的是满足条件的index</p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
