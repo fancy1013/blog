@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-04-12T19:43:03Z" />
+  <meta name="published" content="Apr 12, 2021" />
+  <title>GAN</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">GAN</h1>
+<p class="date">Apr 12, 2021</p>
+</header>
+<h1 id="一gan-overview">一、GAN Overview</h1>
+<figure>
+<img src="https://pic1.zhimg.com/v2-f98f1d3caabbca9b6baa4235c40150b4_r.jpg" alt="preview" /><figcaption aria-hidden="true">preview</figcaption>
+</figure>
+<figure>
+<img src="https://pic4.zhimg.com/v2-95c709a87749e0778248fc8fdd289b83_r.jpg" alt="preview" /><figcaption aria-hidden="true">preview</figcaption>
+</figure>
+<figure>
+<img src="https://pic3.zhimg.com/v2-78851777a659db4821695242cd39b42e_r.jpg" alt="preview" /><figcaption aria-hidden="true">preview</figcaption>
+</figure>
+<h1 id="二gan数学推导">二、GAN数学推导</h1>
+<h2 id="kl散度">KL散度</h2>
+<p>p为真实事件的概率分布，q为拟合的概率分布。</p>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412191630022.png" alt="image-20210412191630022" /><figcaption aria-hidden="true">image-20210412191630022</figcaption>
+</figure>
+<h2 id="jsd散度">JSD散度</h2>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412191855788.png" alt="image-20210412191855788" /><figcaption aria-hidden="true">image-20210412191855788</figcaption>
+</figure>
+<h1 id="dx">D*(x)</h1>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412192009196.png" alt="image-20210412192009196" /><figcaption aria-hidden="true">image-20210412192009196</figcaption>
+</figure>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412192046155.png" alt="image-20210412192046155" /><figcaption aria-hidden="true">image-20210412192046155</figcaption>
+</figure>
+<p>这证明了学习到的判别函数D(x)可以用来判断真实分布和拟合分布的差异。</p>
+<h2 id="gx">G*(x)</h2>
+<p>根据上面的式子，可以得到G*：</p>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412192312820.png" alt="image-20210412192312820" /><figcaption aria-hidden="true">image-20210412192312820</figcaption>
+</figure>
+<h2 id="最终算法流程">最终算法流程</h2>
+<p>对于训练的每一轮：</p>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412193534420.png" alt="image-20210412193534420" /><figcaption aria-hidden="true">image-20210412193534420</figcaption>
+</figure>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412193550334.png" alt="image-20210412193550334" /><figcaption aria-hidden="true">image-20210412193550334</figcaption>
+</figure>
+<h1 id="二dcgan-overview">二、DCGAN Overview</h1>
+<figure>
+<img src="https://pic2.zhimg.com/v2-1c06594f38b896e8d15154592bae0309_r.jpg" alt="preview" /><figcaption aria-hidden="true">preview</figcaption>
+</figure>
+<h1 id="三后话">三、后话</h1>
+<p>其实在GAN之前，就已经有Auto-Encoder，VAE这样的方法来使用神经网络做生成式任务了。</p>
+<p>GAN的最大的创新就是在于非常精妙地引入了判别器，从样本的维度解决了衡量两个分布差异的问题。</p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
