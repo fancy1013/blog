@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-04-12T20:40:42Z" />
+  <meta name="published" content="Apr 12, 2021" />
+  <title>VAE</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">VAE</h1>
+<p class="date">Apr 12, 2021</p>
+</header>
+<h1 id="一结构">一、结构</h1>
+<p>和Encoder-Decoder结构类似。</p>
+<p><img src="https://pic3.zhimg.com/v2-dda0855d2d3e00e786956a827b1c5f26_r.jpg" style="zoom:67%;" /></p>
+<h2 id="推断网络">(1)推断网络</h2>
+<p><img src="https://pic2.zhimg.com/v2-cb2ba0c3c7ed6906fdc8d3c28fdd5e91_b.jpg" /></p>
+<h2 id="生成网络">(2)生成网络</h2>
+<p><img src="https://pic1.zhimg.com/v2-eac1f3c744ec6abe523335dedfec97f4_b.jpg" /></p>
+<h2 id="目标">(3)目标</h2>
+<p><img src="https://pic2.zhimg.com/v2-9562ab5aa2df76c4d8071d061554b535_b.jpg" /></p>
+<p>注释：</p>
+<p>KL散度的前半部分就是熵，后半部分就是交叉熵。</p>
+<figure>
+<img src="https://pic2.zhimg.com/v2-b457c02e3ad3bdcbc4873af8df86f119_b.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
