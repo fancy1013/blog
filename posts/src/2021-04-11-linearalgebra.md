@@ -3,6 +3,7 @@ title: "概率论&线性代数"
 date: Apr 11,2021
 ---
 对于概率论和线性代数的复习。
+
 # 一、贝叶斯公式
 $$
 P(\Theta|X) = \frac{P(X|\Theta)P(\Theta)}{P(X)}
@@ -17,7 +18,9 @@ $P(X|\Theta)$,在确定了参数的情况下，试验数据的概率分布。实
 $P(\Theta|X)$，后验分布。
 
 $P(X)$，边缘概率。
+
 # 二、MLE和MAP
+
 知识点复习链接：[聊一聊机器学习的MLE和MAP：最大似然估计和最大后验估计 - 夏飞的文章 - 知乎](https://zhuanlan.zhihu.com/p/32480810)
 
 ### 例题：一枚硬币，扔了一亿次都是正面朝上，再扔一次反面朝上的概率是多少？
@@ -25,6 +28,7 @@ $P(X)$，边缘概率。
 [解答链接](https://blog.csdn.net/qq_29884019/article/details/100008617)
 
 # 三、矩阵求逆：LU分解
+
 知识点复习链接：[矩阵分解—1-LU分解 - rocketman的文章 - 知乎](https://zhuanlan.zhihu.com/p/54943042)
 
 <center>
