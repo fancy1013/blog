@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-04-12T20:40:42Z" />
+  <meta name="last_modified" content="2021-04-14T13:53:04Z" />
   <meta name="published" content="Apr 12, 2021" />
   <title>VAE</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -30,7 +30,9 @@
 <h1 class="title">VAE</h1>
 <p class="date">Apr 12, 2021</p>
 </header>
-<h1 id="一结构">一、结构</h1>
+<p>Links:</p>
+<p>https://jaan.io/what-is-variational-autoencoder-vae-tutorial/</p>
+<h1 id="一vae概述">一、VAE概述</h1>
 <p>和Encoder-Decoder结构类似。</p>
 <p><img src="https://pic3.zhimg.com/v2-dda0855d2d3e00e786956a827b1c5f26_r.jpg" style="zoom:67%;" /></p>
 <h2 id="推断网络">(1)推断网络</h2>
@@ -43,6 +45,19 @@
 <p>KL散度的前半部分就是熵，后半部分就是交叉熵。</p>
 <figure>
 <img src="https://pic2.zhimg.com/v2-b457c02e3ad3bdcbc4873af8df86f119_b.jpg" alt="img" /><figcaption aria-hidden="true">img</figcaption>
+</figure>
+<h1 id="二从神经网络的角度">二、从神经网络的角度</h1>
+<p><img src="https://jaan.io/images/encoder-decoder.png" style="zoom:67%;" /></p>
+<p>用encoder获得z，用decoder重建x。</p>
+<h2 id="损失函数">（1）损失函数</h2>
+<p><img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210413225116957.png" alt="image-20210413225116957" style="zoom:67%;" /></p>
+<p>每个datapoint都有一个损失，用下标i表示。</p>
+<p>第一项表示reconstruction loss。它让decoder学会重建数据。</p>
+<p>第二项是正则项。</p>
+<p><strong>在VAE中，p(z)是一个N（0，1）的正态分布。</strong></p>
+<p>Why？</p>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210414001048582.png" alt="image-20210414001048582" /><figcaption aria-hidden="true">image-20210414001048582</figcaption>
 </figure>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>

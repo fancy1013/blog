@@ -1,5 +1,5 @@
 ---
-``title: "Paper For MSRA Topic"
+title: "Paper For MSRA Topic"
 date: Apr 12, 2021
 ---
 
@@ -67,6 +67,10 @@ def de_Casteljau(n, pointSet_p, t):
 
 
 
+## (3) Inverse Graphics
+
+In the visual domain, inversion of a renderer for the purposes of scene understanding is typically referred to as inverse graphics.
+
 
 
 # 二、CVPR2021:*Cloud2Curve: Generation and Vectorization of Parametric Sketches*
@@ -91,7 +95,7 @@ def de_Casteljau(n, pointSet_p, t):
 
 # 三、ICLR2018: *A Neural Representation of Sketch Drawings*
 
-这篇文章应该是这个领域的第一篇。
+这篇文章应该是 **ai绘画** 的第一篇。
 
 ## （1）点的形式
 
@@ -107,8 +111,37 @@ $$
 
 
 
-![image-20210413221003563](/Users/yanjieze/Library/Application Support/typora-user-images/image-20210413221003563.png)
+![](/Users/yanjieze/Library/Application Support/typora-user-images/image-20210413221003563.png)
 
 这是latent vector的表达式。
 
 ![image-20210413223346437](/Users/yanjieze/Library/Application Support/typora-user-images/image-20210413223346437.png)
+
+
+
+## （3）训练
+
+<img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210414002308030.png" style="zoom:67%;" />
+
+
+
+## （4）实验
+
+<img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210414002513628.png" style="zoom:67%;" />
+
+
+
+# 四、ICML2018: *Synthesizing Programs for Images using Reinforced Adversarial Learning*
+
+这是他们的[视频](https://www.youtube.com/watch?v=iSyvwAwa7vk)。
+
+this is the first demonstration of an end-to-end, unsupervised and adversarial inverse graphics agent on challenging real world
+
+下图是SPIRAL结构。
+
+![image-20210414005203819](/Users/yanjieze/Library/Application Support/typora-user-images/image-20210414005203819.png)
+
+
+
+# 五、ECCV2020: *B´ezierSketch: A generative model for scalable vector sketches*
+

@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-04-12T22:00:25Z" />
+  <meta name="last_modified" content="2021-04-14T13:53:16Z" />
   <meta name="published" content="Apr 12, 2021" />
   <title>Paper For MSRA Topic</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -15,6 +15,7 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -32,9 +33,80 @@
 </header>
 <h1 id="一基础知识准备">一、基础知识准备</h1>
 <h2 id="bezier-curve">(1) <em>Bezier curve</em></h2>
+<h3 id="讲解链接">讲解链接</h3>
 <p><a href="https://www.zhihu.com/question/419155303/answer/1454607426">「贝塞尔曲线」有哪些作用和特点，该如何正确使用？ - DBinary的回答 - 知乎</a></p>
-<h1 id="二paper1cloud2curve-generation-and-vectorization-of-parametric-sketches">二、Paper1:<strong>Cloud2Curve: Generation and Vectorization of Parametric Sketches</strong></h1>
-<p>CVPR 2021。</p>
+<p><a href="https://www.vectormoon.net/2020/09/25/Bezier/">Bezier算法详解-blog</a></p>
+<h3 id="曲线定义">曲线定义</h3>
+<p><img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412222730363.png" /></p>
+<h3 id="bezier生成曲线算法">Bezier生成曲线算法</h3>
+<p><img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210412223042588.png" /></p>
+<h3 id="代码">代码</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> draw_curve(p_list):</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">    :param p_list: (list of list of int:[[x0, y0], [x1, y1], ...])point set of p</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">    result: (list of list of int:[[x0, y0], [x1, y1], ...])point on curve</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> []</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    P <span class="op">=</span> []</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    P <span class="op">=</span> p_list.copy()</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    r <span class="op">=</span> <span class="bu">len</span>(p_list)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="dv">20923</span>): <span class="co">#2020/09/23</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        t <span class="op">=</span> i<span class="op">/</span><span class="dv">20923</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        x, y <span class="op">=</span> de_Casteljau(r, P, t)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        result.append((x, y))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> de_Casteljau(n, pointSet_p, t):</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co">    :param n: number of control</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co">    :param pointSet_p: (list of list of int:[[x0, y0], [x1, y1], ...])point set of p</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co">    :param t: t</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span>(n):</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, n<span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>            P[i][<span class="dv">0</span>] <span class="op">=</span> (<span class="dv">1</span><span class="op">-</span>t)<span class="op">*</span>P[i][<span class="dv">0</span>] <span class="op">+</span> t<span class="op">*</span>P[i<span class="op">+</span><span class="dv">1</span>][<span class="dv">0</span>]</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>            P[i][<span class="dv">1</span>] <span class="op">=</span> (<span class="dv">1</span><span class="op">-</span>t)<span class="op">*</span>P[i][<span class="dv">1</span>] <span class="op">+</span> t<span class="op">*</span>P[i<span class="op">+</span><span class="dv">1</span>][<span class="dv">1</span>]</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        n <span class="op">-=</span> <span class="dv">1</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    P[<span class="dv">0</span>][<span class="dv">0</span>] <span class="op">=</span> <span class="bu">int</span>(P[<span class="dv">0</span>][<span class="dv">0</span>] <span class="op">+</span> <span class="fl">0.5</span>)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    P[<span class="dv">0</span>][<span class="dv">1</span>] <span class="op">=</span> <span class="bu">int</span>(P[<span class="dv">0</span>][<span class="dv">1</span>] <span class="op">+</span> <span class="fl">0.5</span>)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> P[<span class="dv">0</span>]</span></code></pre></div>
+<h2 id="b-splineb样条曲线">(2) <em>B-spline</em>（B样条曲线）</h2>
+<h2 id="inverse-graphics">(3) Inverse Graphics</h2>
+<p>In the visual domain, inversion of a renderer for the purposes of scene understanding is typically referred to as inverse graphics.</p>
+<h1 id="二cvpr2021cloud2curve-generation-and-vectorization-of-parametric-sketches">二、CVPR2021:<em>Cloud2Curve: Generation and Vectorization of Parametric Sketches</em></h1>
+<h2 id="related-work">(1) Related Work</h2>
+<p>这个领域接触得很少，大概扫一眼related work。</p>
+<p><strong>Generative Models</strong>: GAN, VAE, SketchRNN, 还有一篇是Reinforced Adversarial Learning,可以细看一下。</p>
+<p><strong>Parametric representation:</strong> Bezier, B- Splines, Hermite Splines，三种曲线。还有<em>ICML</em>, 2018的那篇用的RL。</p>
+<p><strong>Learning parametric curves</strong>: 一般生成Bezier曲线/B样条曲线的方法都是代入t计算。比较新的方法：：BezierEncoder用深度循环模型做的（ECCV 2020）。</p>
+<h1 id="三iclr2018-a-neural-representation-of-sketch-drawings">三、ICLR2018: <em>A Neural Representation of Sketch Drawings</em></h1>
+<p>这篇文章应该是 <strong>ai绘画</strong> 的第一篇。</p>
+<h2 id="点的形式">（1）点的形式</h2>
+<p><span class="math display">\[
+(∆x, ∆y, p_1, p_2, p_3).
+\]</span></p>
+<blockquote>
+<p>The first two elements are the offset distance in the x and y directions of the pen from the previous point. The last 3 elements represents a binary one-hot vector of 3 possible states. The fifirst pen state, <em>p</em>1, indicates that the pen is currently touching the paper, and that a line will be drawn connecting the next point with the current point. The second pen state, <em>p</em>2, indicates that the pen will be lifted from the paper after the current point, and that no line will be drawn next. The fifinal pen state, <em>p</em>3, indicates that the drawing has ended, and subsequent points, including the current point, will not be rendered.</p>
+</blockquote>
+<h2 id="模型">(2) 模型</h2>
+<p>基本模型是Sequence-to-Sequence Variational Autoencoder (VAE)，但是是一个<strong>双向RNN</strong>，即如下图左边所示，encoder先把input正着输入一遍，再倒着输入一遍。</p>
+<p><img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210413221003563.png" /></p>
+<p>这是latent vector的表达式。</p>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210413223346437.png" alt="image-20210413223346437" /><figcaption aria-hidden="true">image-20210413223346437</figcaption>
+</figure>
+<h2 id="训练">（3）训练</h2>
+<p><img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210414002308030.png" style="zoom:67%;" /></p>
+<h2 id="实验">（4）实验</h2>
+<p><img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210414002513628.png" style="zoom:67%;" /></p>
+<h1 id="四icml2018-synthesizing-programs-for-images-using-reinforced-adversarial-learning">四、ICML2018: <em>Synthesizing Programs for Images using Reinforced Adversarial Learning</em></h1>
+<p>这是他们的<a href="https://www.youtube.com/watch?v=iSyvwAwa7vk">视频</a>。</p>
+<p>this is the first demonstration of an end-to-end, unsupervised and adversarial inverse graphics agent on challenging real world</p>
+<p>下图是SPIRAL结构。</p>
+<figure>
+<img src="/Users/yanjieze/Library/Application%20Support/typora-user-images/image-20210414005203819.png" alt="image-20210414005203819" /><figcaption aria-hidden="true">image-20210414005203819</figcaption>
+</figure>
+<h1 id="五eccv2020-beziersketch-a-generative-model-for-scalable-vector-sketches">五、ECCV2020: <em>B´ezierSketch: A generative model for scalable vector sketches</em></h1>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>
 var code_blocks = document.querySelectorAll("pre.sourceCode");
