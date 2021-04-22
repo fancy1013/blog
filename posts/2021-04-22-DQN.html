@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="last_modified" content="2021-04-22T19:49:46Z" />
+  <meta name="published" content="Apr 22, 2021" />
+  <title>Apply DQN</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Apply DQN</h1>
+<p class="date">Apr 22, 2021</p>
+</header>
+<p>Reference:</p>
+<p><a href="https://medium.com/intro-to-artificial-intelligence/deep-q-network-dqn-applying-neural-network-as-a-functional-approximation-in-q-learning-6ffe3b0a9062">Deep Q Network(DQN)- Applying Neural Network as a functional approximation in Q-learning</a></p>
+<p><a href="https://towardsdatascience.com/reinforcement-learning-w-keras-openai-dqns-1eed3a5338c">Reinforcement Learning w/ Keras + OpenAI: DQNs</a></p>
+<h1 id="basic-structure">1 Basic Structure</h1>
+<p>In DQN, we make use of two separate networks with the same architecture to estimate the target and prediction Q values for the stability of the Q-learning algorithm. The result from the target model is treated as the ground truth for the prediction network. Prediction network’s weights get updated in every iteration and the target network’s weights get updated with prediction network weights after N iteration.</p>
+<center>
+<img src="../imgs/dqn.png">
+</center>
+<h1 id="pseudocode-for-dqn">2 Pseudocode for DQN</h1>
+<ol type="1">
+<li>Episode begins.</li>
+<li>Perform action a_t from state st and observe the next state s_t+1 and reward r. Initially, the action is randomly selected. Over time, the action from the prediction network is used based on epsilon-greedy policy. In epsilon-greedy policy, an action which has the highest Q value will be considered. In a typical neural network, prediction with the highest probability will be selected.</li>
+<li>Compute the reward for the action.</li>
+<li>Store the current state, action, reward, and next state in replay buffer. It enables the batch training in NN.</li>
+<li>s_t+1 is the new state s_t and repeat steps 2 to 4 until the batch size reaches. Run the batch training in NN of we reach the batch size. Please note the representation of the loss function different in the implementation. You can refer [3] for getting the understanding of the code.</li>
+<li>After we reach N iteration, the weights of the prediction network get copied to Target Network.</li>
+<li>Episode ends.</li>
+<li>Repeat steps 1 to 7 until the optimal Q value is reached.</li>
+</ol>
+<h1 id="dqn-agent-implementation">3 DQN Agent Implementation</h1>
+<p>The Deep Q Network revolves around continuous learning, meaning that we don’t simply accrue a bunch of trial/training data and feed it into the model. Instead, we create training data through the trials we run and feed this information into it directly after running the trial.</p>
+<h2 id="hyper-parameter">3.1 Hyper Parameter</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DQN:</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, env):</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.env     <span class="op">=</span> env</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.memory  <span class="op">=</span> deque(maxlen<span class="op">=</span><span class="dv">2000</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.gamma <span class="op">=</span> <span class="fl">0.95</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.epsilon <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.epsilon_min <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.epsilon_decay <span class="op">=</span> <span class="fl">0.995</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.learning_rate <span class="op">=</span> <span class="fl">0.01</span></span></code></pre></div>
+<p>The “memory” is a key component of DQNs: as mentioned previously, the trials are used to continuously train the model. However, rather than training on the trials as they come in, we add them to memory and train on a random sample of that memory. Why do this instead of just training on the last x trials as our “sample?” This is because: by taking a random sample, we don’t bias our training set, and instead ideally learn about scaling all environments we would encounter equally well.</p>
+<p>The “epsilon” is also a key component, for RL.</p>
+<h2 id="create-model">3.2 create model</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_model(<span class="va">self</span>):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>        model   <span class="op">=</span> Sequential()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        state_shape  <span class="op">=</span> <span class="va">self</span>.env.observation_space.shape</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        model.add(Dense(<span class="dv">24</span>, input_dim<span class="op">=</span>state_shape[<span class="dv">0</span>], </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>            activation<span class="op">=</span><span class="st">&quot;relu&quot;</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        model.add(Dense(<span class="dv">48</span>, activation<span class="op">=</span><span class="st">&quot;relu&quot;</span>))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        model.add(Dense(<span class="dv">24</span>, activation<span class="op">=</span><span class="st">&quot;relu&quot;</span>))</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        model.add(Dense(<span class="va">self</span>.env.action_space.n))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        model.<span class="bu">compile</span>(loss<span class="op">=</span><span class="st">&quot;mean_squared_error&quot;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            optimizer<span class="op">=</span>Adam(lr<span class="op">=</span><span class="va">self</span>.learning_rate))</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> model</span></code></pre></div>
+<p>Use this function to define two model.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, env):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.env     <span class="op">=</span> env</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.memory  <span class="op">=</span> deque(maxlen<span class="op">=</span><span class="dv">2000</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.gamma <span class="op">=</span> <span class="fl">0.95</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.epsilon <span class="op">=</span> <span class="fl">1.0</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.epsilon_min <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.epsilon_decay <span class="op">=</span> <span class="fl">0.995</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.learning_rate <span class="op">=</span> <span class="fl">0.01</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.tau <span class="op">=</span> <span class="fl">.05</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.model <span class="op">=</span> <span class="va">self</span>.create_model()</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># &quot;hack&quot; implemented by DeepMind to improve convergence</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.target_model <span class="op">=</span> <span class="va">self</span>.create_model()</span></code></pre></div>
+<p>The fact that there are two separate models, one for doing predictions and one for tracking “target values” is definitely counter-intuitive. To be explicit, the role of the model (self.model) is to do the actual predictions on what action to take, and the target model (self.target_model) tracks what action we want our model to take.</p>
+<h2 id="remember">3.3 remember</h2>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> remember(<span class="va">self</span>, state, action, reward, new_state, done):</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.memory.append([state, action, reward, new_state, done])</span></code></pre></div>
+<h2 id="replay">3.4 replay</h2>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> replay(<span class="va">self</span>):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>        batch_size <span class="op">=</span> <span class="dv">32</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">len</span>(<span class="va">self</span>.memory) <span class="op">&lt;</span> batch_size: </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        samples <span class="op">=</span> random.sample(<span class="va">self</span>.memory, batch_size)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> sample <span class="kw">in</span> samples:</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>            state, action, reward, new_state, done <span class="op">=</span> sample</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>            target <span class="op">=</span> <span class="va">self</span>.target_model.predict(state)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> done:</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>                target[<span class="dv">0</span>][action] <span class="op">=</span> reward</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                Q_future <span class="op">=</span> <span class="bu">max</span>(</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                    <span class="va">self</span>.target_model.predict(new_state)[<span class="dv">0</span>])</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                target[<span class="dv">0</span>][action] <span class="op">=</span> reward <span class="op">+</span> Q_future <span class="op">*</span> <span class="va">self</span>.gamma</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.model.fit(state, target, epochs<span class="op">=</span><span class="dv">1</span>, verbose<span class="op">=</span><span class="dv">0</span>)</span></code></pre></div>
+<h2 id="target-train">3.5 target train</h2>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> target_train(<span class="va">self</span>):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>        weights <span class="op">=</span> <span class="va">self</span>.model.get_weights()</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        target_weights <span class="op">=</span> <span class="va">self</span>.target_model.get_weights()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(target_weights)):</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            target_weights[i] <span class="op">=</span> weights[i]</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.target_model.set_weights(target_weights)</span></code></pre></div>
+<h2 id="action">3.6 action</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> act(<span class="va">self</span>, state):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.epsilon <span class="op">*=</span> <span class="va">self</span>.epsilon_decay</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.epsilon <span class="op">=</span> <span class="bu">max</span>(<span class="va">self</span>.epsilon_min, <span class="va">self</span>.epsilon)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> np.random.random() <span class="op">&lt;</span> <span class="va">self</span>.epsilon:</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">self</span>.env.action_space.sample()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> np.argmax(<span class="va">self</span>.model.predict(state)[<span class="dv">0</span>])</span></code></pre></div>
+<h2 id="train-agent">3.7 train agent</h2>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> main():</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    env     <span class="op">=</span> gym.make(<span class="st">&quot;MountainCar-v0&quot;</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    gamma   <span class="op">=</span> <span class="fl">0.9</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    epsilon <span class="op">=</span> <span class="fl">.95</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    trials  <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    trial_len <span class="op">=</span> <span class="dv">500</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    updateTargetNetwork <span class="op">=</span> <span class="dv">1000</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    dqn_agent <span class="op">=</span> DQN(env<span class="op">=</span>env)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    steps <span class="op">=</span> []</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> trial <span class="kw">in</span> <span class="bu">range</span>(trials):</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        cur_state <span class="op">=</span> env.reset().reshape(<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> step <span class="kw">in</span> <span class="bu">range</span>(trial_len):</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>            action <span class="op">=</span> dqn_agent.act(cur_state)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>            env.render()</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>            new_state, reward, done, _ <span class="op">=</span> env.step(action)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>            reward <span class="op">=</span> reward <span class="cf">if</span> <span class="kw">not</span> done <span class="cf">else</span> <span class="op">-</span><span class="dv">20</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(reward)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>            new_state <span class="op">=</span> new_state.reshape(<span class="dv">1</span>,<span class="dv">2</span>)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>            dqn_agent.remember(cur_state, action, </span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                reward, new_state, done)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>            dqn_agent.replay()</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>            dqn_agent.target_train()</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>            cur_state <span class="op">=</span> new_state</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> done:</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>                <span class="cf">break</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> step <span class="op">&gt;=</span> <span class="dv">199</span>:</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">&quot;Failed to complete trial&quot;</span>)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">&quot;Completed in </span><span class="sc">{}</span><span class="st"> trials&quot;</span>.<span class="bu">format</span>(trial))</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>            <span class="cf">break</span></span></code></pre></div>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
