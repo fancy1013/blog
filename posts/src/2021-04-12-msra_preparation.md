@@ -1,9 +1,10 @@
 ---
-title: "Paper For MSRA Topic"
+title: "Paper Review for Vector Image Generation"
 date: Apr 12, 2021
 ---
 
 
+本来是为了MSRA的面试看的，谁知道面试时候他根本不问这些，就当扩充知识了吧。
 
 # 一、基础知识准备
 
