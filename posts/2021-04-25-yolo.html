@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-04-24T23:49:16Z" />
+  <meta name="last_modified" content="2021-04-25T23:43:48Z" />
   <meta name="published" content="Apr 25, 2021" />
-  <title>You Look Only Once</title>
+  <title>You Only Look Once</title>
   <link rel="stylesheet" href="/static/style.css" />
   <link rel="stylesheet" href="/static/syntax-highlighting.css" />
   <style>
@@ -15,6 +15,7 @@
       span.underline{text-decoration: underline;}
       div.column{display: inline-block; vertical-align: top; width: 50%;}
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -27,10 +28,24 @@
 <body>
 <a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
 <header id="title-block-header">
-<h1 class="title">You Look Only Once</h1>
+<h1 class="title">You Only Look Once</h1>
 <p class="date">Apr 25, 2021</p>
 </header>
-
+<p>俗话说得好啊，看blog不如看paper，还是把yolo的paper看完吧。明天要考操作系统了，暂时无心学习，划一会水。</p>
+<h1 id="introduction">1 Introduction</h1>
+<p>YOLO之前的RCNN是把detection作为一个分类问题，先用RPN获得预选区域，再用分类器筛选。分类后还要post processing。</p>
+<p>原文中介绍了三个优点： 1. Extremely Fast 2. YOLO reasons globally about the image when making predictions 3. YOLO learns generalizable representations of objects</p>
+<h1 id="unified-detection">2 Unified Detection</h1>
+<p>把image划分为SXS的grid。</p>
+<p>每个bounding box的置信度： <span class="math display">\[
+confidence = Pr(Object)\times IOU^{truth}_{pred}
+\]</span></p>
+<p>每个grid预测B个bounding box： <span class="math display">\[
+(x,y,w,h, confidence)
+\]</span></p>
+<p>每个gird也预测C个类别的概率： <span class="math display">\[
+Pr(Class_i|Object)
+\]</span></p>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>
 var code_blocks = document.querySelectorAll("pre.sourceCode");
