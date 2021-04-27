@@ -14,11 +14,16 @@ His research interest lies in computer vision, reinforcement learning and natura
 
 - run `py sitemap_generator.py` to generate sitemap, `blog/sitemap.xml`
 
-- ```
+- insert a picture by:
+```html
 <center>
 <img src="../imgs/x.jpg">
 </center>
-  ```
+
+<center>
+<img src="../imgs/x.png">
+</center>
+```
 
 ## Misc
 

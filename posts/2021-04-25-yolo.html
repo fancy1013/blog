@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <meta name="last_modified" content="2021-04-25T23:43:48Z" />
+  <meta name="last_modified" content="2021-04-27T23:16:35Z" />
   <meta name="published" content="Apr 25, 2021" />
   <title>You Only Look Once</title>
   <link rel="stylesheet" href="/static/style.css" />
@@ -46,6 +46,26 @@ confidence = Pr(Object)\times IOU^{truth}_{pred}
 <p>每个gird也预测C个类别的概率： <span class="math display">\[
 Pr(Class_i|Object)
 \]</span></p>
+在test的时候，每个bounding box的score的计算公式：
+<center>
+<img src="../imgs/yolo1.png">
+</center>
+上述的流程如下图所示：
+<center>
+<img src="../imgs/yolo2.png">
+</center>
+<h2 id="network-design">2.1 network design</h2>
+<center>
+<img src="../imgs/yolo3.png">
+</center>
+<h2 id="activation">2.2 activation</h2>
+<center>
+<img src="../imgs/yolo5.png">
+</center>
+<h2 id="loss-function">2.3 loss function</h2>
+<center>
+<img src="../imgs/yolo4.png">
+</center>
 <a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
 <script>
 var code_blocks = document.querySelectorAll("pre.sourceCode");
