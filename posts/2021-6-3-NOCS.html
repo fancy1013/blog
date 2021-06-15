@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh" xml:lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2021-06-03" />
+  <meta name="last_modified" content="2021-06-15T16:33:09Z" />
+  <meta name="published" content="June 3, 2021" />
+  <title>Normalized Object Coordinate Space(NOCS)</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/syntax-highlighting.css" />
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  <link rel="icon" href="/static/favicon.ico" type="image/x-icon"/> <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon" />
+  <meta name="author" content="Yanjie Ze">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date());
+  gtag('config', 'UA-116308654-1'); </script>
+</head>
+<body>
+<a id="return" href="/"> <img src="/static/logo.png" style="width:25%;float:right"> </a>
+<header id="title-block-header">
+<h1 class="title">Normalized Object Coordinate Space(NOCS)</h1>
+<p class="date">June 3, 2021</p>
+</header>
+<h1 id="normalized-object-coordinate-spacenocs">Normalized Object Coordinate Space(NOCS)</h1>
+<p>Yanjie Ze, June 2021</p>
+<p>来自 CVPR 2019，链接: https://github.com/hughw19/NOCS_CVPR2019</p>
+<h2 id="dataset">1 Dataset</h2>
+<p>因为这个文章提出的方法要用的数据格式和目前主流的数据集不太一样，所以作者用 <strong>真实场景+虚拟物品</strong> 组合成一些人造数据集。</p>
+<p><img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210603185153646.png" alt="image-20210603185153646" style="zoom:50%;" /></p>
+<h2 id="model-overview">2 Model Overview</h2>
+<p>2D instance segmentation用的是maskRCNN,</p>
+<p><img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210603185250420.png" alt="image-20210603185250420" style="zoom:50%;" /></p>
+<h2 id="nocs-map-prediction-cnn-具体模型">3 <strong>NOCS Map Prediction CNN</strong> （具体模型）</h2>
+<h3 id="nocs-map-head">3.1 NOCS Map Head</h3>
+<p><img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210603185711811.png" alt="image-20210603185711811" style="zoom:50%;" /></p>
+<a style="color:black;font-size:2em;float:right;margin-right:30px;margin-bottom:40px;" href="../">[Return to the homepage]</a>
+<script>
+var code_blocks = document.querySelectorAll("pre.sourceCode");
+code_blocks.forEach(function(block) {
+  block.classList.add("numberSource");
+  block.classList.add("numberLines");
+});
+</script>
+</body>
+</html>
