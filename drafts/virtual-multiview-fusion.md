@@ -77,3 +77,11 @@ renderer的具体结构如下:
 
 <img src="/Users/yanjieze/Downloads/architecture_renderer.jpeg" alt="architecture_renderer" style="zoom:69%;" />
 
+后来改用pyrender写了。
+
+可以渲染。目前存在的问题：
+
+1. 渲染的画面不清楚。
+2. 渲染的相机位置不知道怎么找。
+3. 只有RGB和dpeth的图，其他的（normalized global coordinate image， normal）不知道怎么如何提取出来
+4. backface culling？
