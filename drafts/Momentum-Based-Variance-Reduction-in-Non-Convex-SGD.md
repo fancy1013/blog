@@ -225,7 +225,7 @@ $$
 
 ## 6 Lyapunov potential function
 
-In the theory of [ordinary differential equations](https://en.wikipedia.org/wiki/Ordinary_differential_equations) (ODEs), **Lyapunov functions** are scalar functions that may be used to prove the stability of an [equilibrium](https://en.wikipedia.org/wiki/Equilibrium_point) of an ODE. 
+In the theory of ordinary differential equations (ODEs), **Lyapunov functions** are scalar functions that may be used to prove the stability of an equilibrium of an ODE. 
 
 typical form:
 $$
@@ -294,10 +294,8 @@ Then let us focus on these terms individually.
 
 For $A_t$:
 $$
-\begin{align}
 \sum_{t=1}^T A_t = \sum_{t=1}^T 2c^2\eta_t^3G_{t+1}^2  \leq 2k^3c^2\ln (T+2)
-
-\end{align} \ (using\ Lemma\ 4)
+ \ (using\ Lemma\ 4)
 $$
 
 
@@ -456,5 +454,4 @@ Thus:
 $$
 \mathbb{E}\left[ \sum_{t=1}^{T} \frac{||\nabla F(x_t)||}{T}\right] \leq \frac{w^\frac 16 \sqrt{2M} + 2M^{\frac 34}}{\sqrt T} + \frac{2\sigma^\frac 13}{T^\frac 13}
 $$
-
 

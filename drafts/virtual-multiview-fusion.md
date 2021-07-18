@@ -57,6 +57,8 @@ Pretrain: **Classification Model on ImageNet**
 
 **然后**，三维点从每个view采集获得feature vector，如下公式。
 
+其中的含义是depth check，
+
 <img src="/Users/yanjieze/Library/Application Support/typora-user-images/image-20210706220447689.png" alt="image-20210706220447689" style="zoom:50%;" />
 
 获得feature后，做一个**平均值**（而不是直接取最大值）。因为这个效果比较好。
